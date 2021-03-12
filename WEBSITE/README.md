@@ -1,2 +1,2 @@
 # Website
-This is a possible future feature, will probably only be for the hosted options of the system
+Will probably only be included in the hosted oprions.
