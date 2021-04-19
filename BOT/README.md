@@ -1,2 +1,2 @@
-# Bot
-This is for the Discord Bot
+# Bot & API
+This will run the bot and the api.
