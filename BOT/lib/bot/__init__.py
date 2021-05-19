@@ -2,7 +2,13 @@ from asyncio import sleep
 from datetime import datetime
 from glob import glob
 from discord.ext.commands import Bot as BotBase
-from discord.ext.commands import CommandNotFound, Context, BadArgument, MissingRequiredArgument, CommandOnCooldown
+from discord.ext.commands import (
+    CommandNotFound,
+    Context,
+    BadArgument,
+    MissingRequiredArgument,
+    CommandOnCooldown,
+)
 from discord.errors import HTTPException, Forbidden
 from discord import Intents, Embed, File, DMChannel, Colour
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -12,6 +18,7 @@ from apscheduler.triggers.cron import CronTrigger
 PREFIX = "."
 OWNER_IDS = [269165863515586560]
 COGS = [path.split("\\")[-1][:-3] for path in glob("./lib/cogs/*.py")]
+
 
 class Ready(object):
     def __init__(self):
@@ -24,6 +31,7 @@ class Ready(object):
 
     def all_ready(self):
         return all([getattr(self, cog) for cog in COGS])
+
 
 class Bot(BotBase):
     def __init__(self):
@@ -75,7 +83,7 @@ class Bot(BotBase):
     async def on_error(self, err, *args, **kwargs):
         if err == "on_command_error":
             await args[0].send("Something went wrong...")
-        
+
         else:
             await self.stdout.send("An error has occured.")
 
@@ -86,13 +94,19 @@ class Bot(BotBase):
             pass
 
         elif isinstance(exc, BadArgument):
-            await ctx.send(f"You inputed an invalid argument, use {self.PREFIX}help to see all the required arguments.")
+            await ctx.send(
+                f"You inputed an invalid argument, use {self.PREFIX}help to see all the required arguments."
+            )
 
         elif isinstance(exc, MissingRequiredArgument):
-            await ctx.send(f"You left out a vital argument, use {self.PREFIX}help to see all the required arguments.")
+            await ctx.send(
+                f"You left out a vital argument, use {self.PREFIX}help to see all the required arguments."
+            )
 
         elif isinstance(exc, CommandOnCooldown):
-            await ctx.send(f"This command is on cooldown for {exc.retry_after:,.2f} more seconds.")
+            await ctx.send(
+                f"This command is on cooldown for {exc.retry_after:,.2f} more seconds."
+            )
 
         elif isinstance(exc, HTTPException):
             await ctx.send("I was unable to send the message.")
@@ -119,8 +133,8 @@ class Bot(BotBase):
             await self.stdout.send("Bot Ready")
             print("Bot Ready")
 
-            #meta = self.get_cog("Meta")
-            #await meta.set()
+            # meta = self.get_cog("Meta")
+            # await meta.set()
 
         else:
             print("Bot Reconnected")
@@ -129,5 +143,6 @@ class Bot(BotBase):
         if not message.author.bot:
             if not isinstance(message.channel, DMChannel):
                 await self.process_commands(message)
+
 
 bot = Bot()
