@@ -1,3 +1,9 @@
+"""
+    File: /lib/bot/__init__.py
+    Useage: Used to create the bot and launch cogs
+    Info: Bot is imported as BotBase so I can make a class called Bot. Theres not much to this file.
+"""
+
 from asyncio import sleep
 from datetime import datetime
 from glob import glob
