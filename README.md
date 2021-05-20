@@ -28,7 +28,7 @@ This purchasing system is designed to be just a great as other systems such as m
 
 ## Planed Features
 
-- Product Purchasing
+- Product Purchasing (Cart System)
 - Product Whitelist
 - Product Transfer
 - Product Loaning
@@ -49,4 +49,4 @@ If you have any suggestions join the Discord and let us know!
 
 # Advanced Documentation
 
-[Visit the docs]()
+[Visit the docs](https://redon-tech.github.io/RPH-Docs/)
