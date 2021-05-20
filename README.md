@@ -21,3 +21,32 @@ Go to the top left and hit the list button to see the table of contents!
 
 This system is designed to be self-hosted if you want a hosted option visit [Redon Tech RPH]()(WIP).
 This purchasing system is designed to be just a great as other systems such as myPod, Kireko, ect. with more features and 100% free and open source.
+
+## Features
+
+- 
+
+## Planed Features
+
+- Product Purchasing
+- Product Whitelist
+- Product Transfer
+- Product Loaning
+- Product Testing
+- Product Licensing
+- Monthly Subscriptions (Via Private Servers and dev products)
+If you have any suggestions join the Discord and let us know!
+
+# Installation
+
+## Bot & API
+
+
+
+## Roblox
+
+
+
+# Advanced Documentation
+
+[Visit the docs]()
