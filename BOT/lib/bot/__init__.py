@@ -130,8 +130,8 @@ class Bot(BotBase):
 
     async def on_ready(self):
         if not self.ready:
-            self.guild = self.get_guild(544213180193308672)
-            self.stdout = self.get_channel(798387562012082217)
+            self.guild = self.get_guild(self.config["guild"])
+            self.stdout = self.get_channel(self.config["standardoutput"])
 
             while not self.cogs_ready.all_ready():
                 await sleep(0.5)
