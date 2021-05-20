@@ -1,6 +1,6 @@
 """
     File: /lib/bot/__init__.py
-    Useage: Used to create the bot and launch cogs
+    Usage: Used to create the bot and launch cogs
     Info: Bot is imported as BotBase so I can make a class called Bot. Theres not much to this file.
 """
 
@@ -19,11 +19,10 @@ from discord.errors import HTTPException, Forbidden
 from discord import Intents, Embed, File, DMChannel, Colour
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+import json
 
 
-PREFIX = "."
-OWNER_IDS = [269165863515586560]
-COGS = [path.split("\\")[-1][:-3] for path in glob("./lib/cogs/*.py")]
+COGS = [path.split("\\")[-1][:-3] for path in glob("./BOT/lib/cogs/*.py")]
 
 
 class Ready(object):
@@ -33,7 +32,6 @@ class Ready(object):
 
     def ready_up(self, cog):
         setattr(self, cog, True)
-        print(f"{cog} cog ready")
 
     def all_ready(self):
         return all([getattr(self, cog) for cog in COGS])
@@ -41,22 +39,25 @@ class Ready(object):
 
 class Bot(BotBase):
     def __init__(self):
-        self.PREFIX = PREFIX
+        with open("./BOT/lib/bot/config.json") as config_file:
+            self.config = json.load(config_file)
+
+        self.PREFIX = self.config["prefix"]
         self.ready = False
         self.cogs_ready = Ready()
         self.guild = None
         super().__init__(
-            command_prefix=PREFIX,
-            owner_ids=OWNER_IDS,
+            command_prefix=self.PREFIX,
+            owner_ids=self.config["ownerids"],
             intents=Intents.all(),
         )
 
     def setup(self):
         for cog in COGS:
             self.load_extension(f"lib.cogs.{cog}")
-            print(f"{cog} cog loaded")
+            print(" /lib/cogs/{cog}.py setup")
 
-        print("Cog setup complete")
+        print("  Cogs Setup")
 
     def run(self, version):
         self.VERSION = version
@@ -64,11 +65,11 @@ class Bot(BotBase):
         print("Running Cog Setup...")
         self.setup()
 
-        with open("./BOT/lib/bot/token", "r", encoding="utf-8") as tf:
-            self.TOKEN = tf.read()
+        #with open("./BOT/lib/bot/token", "r", encoding="utf-8") as tf:
+        #    self.TOKEN = tf.read()
 
         print("Running Bot...")
-        super().run(self.TOKEN, reconnect=True)
+        super().run(self.config["token"], reconnect=True)
 
     async def process_commands(self, message):
         ctx = await self.get_context(message, cls=Context)
@@ -137,7 +138,7 @@ class Bot(BotBase):
 
             self.ready = True
             await self.stdout.send("Bot Ready")
-            print("Bot Ready")
+            print("  Bot Ready")
 
             # meta = self.get_cog("Meta")
             # await meta.set()

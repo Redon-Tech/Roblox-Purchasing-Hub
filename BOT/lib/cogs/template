@@ -1,0 +1,20 @@
+"""
+    File: /lib/cogs/{{name}}.py
+    Info: {{info}}
+"""
+from discord.ext.commands import Cog
+from discord import Embed, Colour
+
+class {{Name}}(Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @Cog.listener()
+    async def on_ready(self):
+        if not self.bot.ready:
+            self.bot.cogs_ready.ready_up("{{name}}")
+            await self.bot.stdout.send(" /lib/cogs/{{name}}.py ready")
+            print(" /lib/cogs/{{name}}.py ready")
+
+def setup(bot):
+    bot.add_cog({{Name}}(bot))

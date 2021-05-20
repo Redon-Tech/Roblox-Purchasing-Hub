@@ -1,6 +1,6 @@
 """
     File: launcher.py
-    Useage: Used to launch the bot
+    Usage: Used to launch the bot
     Info: The only reason this exists is so multiplatforms can launch the bot with ease.
 """
 from lib.bot import bot
