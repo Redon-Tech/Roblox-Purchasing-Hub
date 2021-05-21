@@ -17,42 +17,50 @@ db = client.data
 
 
 def insert(data, info):
-    result = db.data.insert_one(info)
+    col = db[data]
+    result = col.insert_one(info)
     return result
 
 
 def insertmany(data, info):
-    results = db.data.insert_many(info)
+    col = db[data]
+    results = col.insert_many(info)
     return results
 
 
 def update(data, query, info):
-    result = db.data.update_one(query, info)
+    col = db[data]
+    result = col.update_one(query, info)
     return result
 
 
 def updatemany(data, query, info):
-    results = db.data.update_many(query, info)
+    col = db[data]
+    results = col.update_many(query, info)
     return results
 
 
 def delete(data, query):
-    result = db.data.delete_one(query)
+    col = db[data]
+    result = col.delete_one(query)
     return result
 
 
 def deletemany(data, query):
-    results = db.data.delete_many(query)
+    col = db[data]
+    results = col.delete_many(query)
     return results
 
 
 def find(data, query):
-    results = db.data.find(query)
+    col = db[data]
+    results = col.find(query)
     return results
 
 
 def findlimit(data, query, limit):
-    results = db.data.find(query).limit(limit)
+    col = db[data]
+    results = col.find(query).limit(limit)
     return results
 
 
