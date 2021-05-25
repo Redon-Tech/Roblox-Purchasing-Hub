@@ -7,7 +7,7 @@ from discord import Embed, Colour
 from quart import Quart, request
 from quart.sessions import NullSession
 from ..utils.database import db, insert, update, delete, find
-from bson.json_util import ObjectId
+from bson.json_util import ObjectId, dumps
 import json
 
 app = Quart(__name__)
@@ -18,7 +18,7 @@ with open("./BOT/lib/bot/config.json") as config_file:
 
 # Define Functions
 
-# This needs to be done with the MongoDB database to make sure the _id is a string and not ObjectId
+## This needs to be done with the MongoDB database to make sure the _id is a string and not ObjectId
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, ObjectId):
@@ -28,7 +28,7 @@ class MyEncoder(json.JSONEncoder):
 
 app.json_encoder = MyEncoder
 
-
+## Products
 def getproducts():
     return find("products", {})
 
@@ -43,12 +43,31 @@ def updateproduct(oldname, newname, description, price):
     return update(
         "products",
         {"name": oldname},
-        {"$inc": {"name": newname, "description": description, "price": price}},
+        {"$replaceWith": {"name": newname, "description": description, "price": price}},
     )
 
 
 def deleteproduct(name):
     return delete("products", {"name": name})
+
+
+## Users
+def getuser(userid):
+    return find("users", {"_id": userid})
+
+
+def verifyuser(userid, username):
+    return insert("users", {"_id": userid, "username": username, "purchases": {}})
+
+
+def giveproduct(userid, productname):
+    product = find("products", {"name": productname})
+    return update("users", {"_id": userid}, {"$set": {"purchases": {product}}})
+
+
+def revokeproduct(userid, productname):
+    product = find("products", {"name": productname})
+    userinfo = find("users", {"_id": userid})
 
 
 # Website Handling
@@ -129,6 +148,28 @@ async def delete_product():
             return {"message": "Deleted"}
         except:
             return {"errors": [{"msessage": "Unable to create product"}]}
+    # Based off of Roblox API errors
+    return {"errors": [{"msessage": "Improper API key passed"}]}
+
+
+@app.route("/v1/user", methods=["GET"])
+async def get_user():
+    info = await request.get_json()
+    dbresponse = getuser(info["userid"])
+    return dumps(dbresponse)
+
+
+@app.route("/v1/verify_user", methods=["POST"])
+async def verify_user():
+    apikey = request.headers["apikey"]
+    if apikey == config["apikey"]:
+        info = await request.get_json()
+        try:
+            verifyuser(info["userid"], info["username"])
+            userinfo = getuser(info["userid"])
+            return dumps(userinfo)
+        except:
+            return {"errors": [{"msessage": "Unable to create user"}]}
     # Based off of Roblox API errors
     return {"errors": [{"msessage": "Improper API key passed"}]}
 
