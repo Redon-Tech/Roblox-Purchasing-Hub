@@ -6,7 +6,8 @@ from discord.ext.commands import Cog
 from discord import Embed, Colour
 from quart import Quart, request
 from quart.sessions import NullSession
-from ..utils.database import db, insert, update, delete, find
+from ..utils.database import db
+from ..utils.api import *
 from bson.json_util import ObjectId, dumps
 import json
 
@@ -27,48 +28,6 @@ class MyEncoder(json.JSONEncoder):
 
 
 app.json_encoder = MyEncoder
-
-## Products
-def getproducts():
-    return find("products", {})
-
-
-def createproduct(name, description, price):
-    return insert(
-        "products", {"name": name, "description": description, "price": price}
-    )
-
-
-def updateproduct(oldname, newname, description, price):
-    return update(
-        "products",
-        {"name": oldname},
-        {"$replaceWith": {"name": newname, "description": description, "price": price}},
-    )
-
-
-def deleteproduct(name):
-    return delete("products", {"name": name})
-
-
-## Users
-def getuser(userid):
-    return find("users", {"_id": userid})
-
-
-def verifyuser(userid, username):
-    return insert("users", {"_id": userid, "username": username, "purchases": {}})
-
-
-def giveproduct(userid, productname):
-    product = find("products", {"name": productname})
-    return update("users", {"_id": userid}, {"$set": {"purchases": {product}}})
-
-
-def revokeproduct(userid, productname):
-    product = find("products", {"name": productname})
-    userinfo = find("users", {"_id": userid})
-
 
 # Website Handling
 
@@ -174,21 +133,51 @@ async def verify_user():
     return {"errors": [{"msessage": "Improper API key passed"}]}
 
 
+@app.route("/v1/give_product", methods=["POST"])
+async def give_product():
+    apikey = request.headers["apikey"]
+    if apikey == config["apikey"]:
+        info = await request.get_json()
+        try:
+            giveproduct(info["userid"], info["productname"])
+            userinfo = getuser(info["userid"])
+            return dumps(userinfo)
+        except:
+            return {"errors": [{"msessage": "Unable to give product"}]}
+    # Based off of Roblox API errors
+    return {"errors": [{"msessage": "Improper API key passed"}]}
+
+
+@app.route("/v1/revoke_product", methods=["DELETE"])
+async def revoke_product():
+    apikey = request.headers["apikey"]
+    if apikey == config["apikey"]:
+        info = await request.get_json()
+        try:
+            revokeproduct(info["userid"], info["productname"])
+            userinfo = getuser(info["userid"])
+            return dumps(userinfo)
+        except:
+            return {"errors": [{"msessage": "Unable to give product"}]}
+    # Based off of Roblox API errors
+    return {"errors": [{"msessage": "Improper API key passed"}]}
+
+
 # Bot Handling
 
 
-class Api(Cog):
+class Website(Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @Cog.listener()
     async def on_ready(self):
         if not self.bot.ready:
-            self.bot.cogs_ready.ready_up("api")
-            await self.bot.stdout.send("`/lib/cogs/api.py` ready")
-            print(" /lib/cogs/api.py ready")
+            self.bot.cogs_ready.ready_up("website")
+            await self.bot.stdout.send("`/lib/cogs/website.py` ready")
+            print(" /lib/cogs/website.py ready")
 
 
 def setup(bot):
     bot.loop.create_task(app.run_task("0.0.0.0"))
-    bot.add_cog(Api(bot))
+    bot.add_cog(Website(bot))
