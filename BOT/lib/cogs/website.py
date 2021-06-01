@@ -1,11 +1,9 @@
 """
-    File: /lib/cogs/api.py
-    Info: This cog runs the API alongside some bot stuff so thats pretty cool.
+    File: /lib/cogs/website.py
+    Info: This cog handles the website which talks to the API.
 """
 from discord.ext.commands import Cog
-from discord import Embed, Colour
 from quart import Quart, request
-from quart.sessions import NullSession
 from ..utils.database import db
 from ..utils.api import *
 from bson.json_util import ObjectId, dumps

@@ -1,5 +1,8 @@
+"""
+    File: /lib/utils/api.py
+    Info: This cog defines all the functions for the API.
+"""
 from .database import db, insert, update, delete, find
-from bson.json_util import dumps
 
 ## Products
 def getproducts():

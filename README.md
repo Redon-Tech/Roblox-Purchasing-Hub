@@ -35,6 +35,7 @@ This purchasing system is designed to be just a great as other systems such as m
 - Product Testing
 - Product Licensing
 - Monthly Subscriptions (Via Private Servers and dev products)
+
 If you have any suggestions join the Discord and let us know!
 
 # Installation
@@ -50,3 +51,15 @@ If you have any suggestions join the Discord and let us know!
 # Advanced Documentation
 
 [Visit the docs](https://redon-tech.github.io/RPH-Docs/)
+
+# Developer Info
+
+## TD
+
+|Status|Name|Description|
+--- | --- | ---
+|Complete|Product API|Create, delete, update products|
+|Complete|User API|Verify, give products, revoke products|
+|In Progress|Bot Commands|Commands to create, delete, update product and verify, give products, and revoke|
+|Planned|Create hub GUI|A simple UI that does not need to be advanced.|
+|Planned|Developer Product|A system that creates developer products automatically to make a cart system. It will reuse old developer products that have the price needed|
