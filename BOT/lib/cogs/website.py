@@ -2,7 +2,8 @@
     File: /lib/cogs/website.py
     Info: This cog handles the website which talks to the API.
 """
-from discord.ext.commands import Cog
+from discord.ext.commands import Cog, command
+from discord.ext.commands.core import Command
 from quart import Quart, request
 from ..utils.database import db
 from ..utils.api import *
@@ -167,6 +168,15 @@ async def revoke_product():
 class Website(Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @command(
+        name="website",
+        aliases=["web", "ws", "websitestatus"],
+        description="Displays if the website is online.",
+    )
+    async def website(self, ctx):
+        if ctx.message.author.id in self.bot.owner_ids:
+            await ctx.send("🟢 Website Online")
 
     @Cog.listener()
     async def on_ready(self):

@@ -5,7 +5,6 @@
 """
 
 from asyncio import sleep
-from datetime import datetime
 from glob import glob
 from discord.ext.commands import Bot as BotBase
 from discord.ext.commands import (
@@ -16,9 +15,7 @@ from discord.ext.commands import (
     CommandOnCooldown,
 )
 from discord.errors import HTTPException, Forbidden
-from discord import Intents, Embed, File, DMChannel, Colour
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
+from discord import Intents, DMChannel
 import json
 
 
@@ -65,7 +62,7 @@ class Bot(BotBase):
         print("Running Cog Setup...")
         self.setup()
 
-        #with open("./BOT/lib/bot/token", "r", encoding="utf-8") as tf:
+        # with open("./BOT/lib/bot/token", "r", encoding="utf-8") as tf:
         #    self.TOKEN = tf.read()
 
         print("Running Bot...")
