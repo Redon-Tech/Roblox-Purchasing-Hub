@@ -52,7 +52,7 @@ class Bot(BotBase):
     def setup(self):
         for cog in COGS:
             self.load_extension(f"lib.cogs.{cog}")
-            print(" /lib/cogs/{cog}.py setup")
+            print(f" /lib/cogs/{cog}.py setup")
 
         print("  Cogs Setup")
 

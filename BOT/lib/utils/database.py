@@ -8,11 +8,14 @@
 from pymongo import MongoClient
 from pprint import pprint
 import json
+import certifi
 
 with open("./BOT/lib/bot/config.json") as config_file:
     config = json.load(config_file)
 
-client = MongoClient(config["mongodb"]["url"])
+client = MongoClient(
+    config["mongodb"]["url"], tlsCAFile=certifi.where()
+)  # Some systems may not require "tlsCAFile"
 db = client.data
 
 

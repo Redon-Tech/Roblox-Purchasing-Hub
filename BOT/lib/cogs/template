@@ -4,6 +4,8 @@
 """
 from discord.ext.commands import Cog, command
 from discord import Embed, Colour
+from datetime import datetime
+
 
 class {{Name}}(Cog):
     def __init__(self, bot):
