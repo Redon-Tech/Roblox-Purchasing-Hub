@@ -19,7 +19,7 @@ def updateproduct(oldname, newname, description, price):
     return update(
         "products",
         {"name": oldname},
-        {"$replaceWith": {"name": newname, "description": description, "price": price}},
+        {"$set": {"name": newname, "description": description, "price": price}},
     )
 
 

@@ -79,19 +79,19 @@ async def update_product():
     apikey = request.headers["apikey"]
     if apikey == config["apikey"]:
         info = await request.get_json()
-        try:
-            updateproduct(
-                info["oldname"], info["newname"], info["description"], info["price"]
-            )
-            return {
-                "info": {
-                    "name": info["newname"],
-                    "description": info["description"],
-                    "price": info["price"],
-                }
+        # try:
+        updateproduct(
+            info["oldname"], info["newname"], info["description"], info["price"]
+        )
+        return {
+            "info": {
+                "name": info["newname"],
+                "description": info["description"],
+                "price": info["price"],
             }
-        except:
-            return {"errors": [{"msessage": "Unable to update product"}]}
+        }
+        # except:
+        #    return {"errors": [{"msessage": "Unable to update product"}]}
     # Based off of Roblox API errors
     return {"errors": [{"msessage": "Improper API key passed"}]}
 
@@ -114,7 +114,7 @@ async def delete_product():
 async def get_user():
     info = await request.get_json()
     dbresponse = getuser(info["userid"])
-    return dumps(dbresponse)
+    return dumps(dbresponse)[1:-1]
 
 
 @app.route("/v1/verify_user", methods=["POST"])
@@ -125,7 +125,7 @@ async def verify_user():
         try:
             verifyuser(info["userid"], info["username"])
             userinfo = getuser(info["userid"])
-            return dumps(userinfo)
+            return dumps(userinfo)[1:-1]
         except:
             return {"errors": [{"msessage": "Unable to create user"}]}
     # Based off of Roblox API errors
@@ -140,7 +140,7 @@ async def give_product():
         try:
             giveproduct(info["userid"], info["productname"])
             userinfo = getuser(info["userid"])
-            return dumps(userinfo)
+            return dumps(userinfo)[1:-1]
         except:
             return {"errors": [{"msessage": "Unable to give product"}]}
     # Based off of Roblox API errors
@@ -155,9 +155,9 @@ async def revoke_product():
         try:
             revokeproduct(info["userid"], info["productname"])
             userinfo = getuser(info["userid"])
-            return dumps(userinfo)
+            return dumps(userinfo)[1:-1]
         except:
-            return {"errors": [{"msessage": "Unable to give product"}]}
+            return {"errors": [{"msessage": "Unable to revoke product"}]}
     # Based off of Roblox API errors
     return {"errors": [{"msessage": "Improper API key passed"}]}
 
