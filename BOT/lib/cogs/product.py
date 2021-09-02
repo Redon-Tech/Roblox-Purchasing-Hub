@@ -177,7 +177,7 @@ class Product(Cog):
         aliases=["removeproduct", "terminateproduct", "fuckoffpieceofshitproduct"],
         description="Delet's a product.",
     )
-    async def createproduct(self, ctx, *, name):
+    async def deleteproduct(self, ctx, *, name):
         def emojicheck(self, user):
             return user == ctx.author
 
