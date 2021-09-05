@@ -57,11 +57,12 @@ class Bot(BotBase):
 
         print("  Cogs Setup")
 
-    def run(self, version):
+    def run(self, version, istest):
         self.VERSION = version
 
         print("Running Cog Setup...")
         self.setup()
+        self.istest = istest
 
         # with open("./BOT/lib/bot/token", "r", encoding="utf-8") as tf:
         #    self.TOKEN = tf.read()
@@ -141,6 +142,9 @@ class Bot(BotBase):
 
             # meta = self.get_cog("Meta")
             # await meta.set()
+
+            if self.istest:
+                await bot.close()
 
         else:
             print("Bot Reconnected")

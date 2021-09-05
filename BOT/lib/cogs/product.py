@@ -59,9 +59,10 @@ class DeleteView(ui.View):
 
     @ui.select(
         custom_id="products:delete_select",
-        options=productoptions,  # SelectOption(label="Test", description="Test Option")
+        options=productoptions,
     )
     async def nextcord_help(self, _, interaction: Interaction):
+
         product = str(interaction.data["values"])[2:-2]
         await interaction.message.delete()
         await interaction.channel.send(
@@ -243,61 +244,6 @@ class Product(Cog):
         await ctx.send(
             "Chose a product to delete", view=DeleteView(ctx), reference=ctx.message
         )
-        """def emojicheck(self, user):
-            return user == ctx.author
-
-        try:
-            product = find("products", {"name": name})
-        except:
-            await ctx.send(
-                "I was unable to find any product matching that name.",
-                delete_after=5.0,
-                reference=ctx.message,
-            )
-
-        if product:
-            embed = Embed(
-                title="Delete Product",
-                description=f"Are you sure you would like to delete {name}?\n✅ to delete\n❌ to cancel.",
-                colour=ctx.author.colour,
-                timestamp=datetime.utcnow(),
-            )
-
-            embedmessage = await ctx.send(embed=embed, reference=ctx.message)
-            await embedmessage.add_reaction("✅")
-            await embedmessage.add_reaction("❌")
-
-            try:
-                reaction, user = await self.bot.wait_for(
-                    "reaction_add", timeout=200.0, check=emojicheck
-                )
-            except TimeoutError:
-                await ctx.author.send(
-                    "You didn't respond in time.",
-                    delete_after=5.0,
-                    reference=ctx.message,
-                )
-                return
-
-            if str(reaction.emoji) == "✅":
-                await embedmessage.delete()
-                try:
-                    deleteproduct(name)
-                    await ctx.send(
-                        "I deleted the product", delete_after=5.0, reference=ctx.message
-                    )
-                    await ctx.message.delete()
-                except:
-                    await ctx.send(
-                        "I was unable to delete the product.",
-                        delete_after=5.0,
-                        reference=ctx.message,
-                    )
-                    raise
-            else:
-                await embedmessage.delete()
-                await ctx.send("Canceled", delete_after=5.0, reference=ctx.message)
-                await ctx.message.delete()"""
 
     @command(
         name="updateproduct",

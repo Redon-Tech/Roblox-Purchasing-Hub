@@ -24,8 +24,7 @@ jobs:
         command: echo $config > BOT/lib/bot/config.json
         name: Create Config File
     - run:
-        #command: python3 BOT/launcher.py
-        command: echo "Implement tests first you smooth brain"
+        command: python3 BOT/test.py
         name: Run
 workflows:
   main:
