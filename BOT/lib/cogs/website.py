@@ -2,8 +2,8 @@
     File: /lib/cogs/website.py
     Info: This cog handles the website which talks to the API.
 """
-from discord.ext.commands import Cog, command
-from discord.ext.commands.core import Command
+from nextcord.ext.commands import Cog, command
+from nextcord.ext.commands.core import Command
 from quart import Quart, request
 from ..utils.database import db
 from ..utils.api import *

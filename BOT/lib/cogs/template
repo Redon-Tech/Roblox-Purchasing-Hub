@@ -2,8 +2,8 @@
     File: /lib/cogs/{{name}}.py
     Info: {{info}}
 """
-from discord.ext.commands import Cog, command
-from discord import Embed, Colour
+from nextcord.ext.commands import Cog, command
+from nextcord import Embed, Colour
 from datetime import datetime
 
 

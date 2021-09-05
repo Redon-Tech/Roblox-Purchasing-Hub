@@ -2,8 +2,8 @@
     File: /lib/cogs/product.py
     Info: This cog handles all commands related to products
 """
-from discord.ext.commands import Cog, command
-from discord import Embed, Colour, colour
+from nextcord.ext.commands import Cog, command
+from nextcord import Embed, Colour, colour
 from datetime import datetime
 from ..utils.api import *
 from ..utils.database import find
@@ -175,7 +175,7 @@ class Product(Cog):
     @command(
         name="deleteproduct",
         aliases=["removeproduct", "terminateproduct", "fuckoffpieceofshitproduct"],
-        description="Delet's a product.",
+        description="Delete's a product.",
     )
     async def deleteproduct(self, ctx, *, name):
         def emojicheck(self, user):
@@ -233,6 +233,17 @@ class Product(Cog):
                 await embedmessage.delete()
                 await ctx.send("Canceled", delete_after=5.0, reference=ctx.message)
                 await ctx.message.delete()
+
+    @command(
+        name="updateproduct",
+        aliases=["changeproduct"],
+        description="Update's a product.",
+    )
+    async def updateproduct(self, ctx, *, name):
+        if name:
+            pass
+        else:
+            ctx.send("A product name is required.", reference=ctx.message)
 
     @Cog.listener()
     async def on_ready(self):

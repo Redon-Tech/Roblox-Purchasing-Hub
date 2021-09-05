@@ -6,16 +6,16 @@
 
 from asyncio import sleep
 from glob import glob
-from discord.ext.commands import Bot as BotBase
-from discord.ext.commands import (
+from nextcord.ext.commands import Bot as BotBase
+from nextcord.ext.commands import (
     CommandNotFound,
     Context,
     BadArgument,
     MissingRequiredArgument,
     CommandOnCooldown,
 )
-from discord.errors import HTTPException, Forbidden
-from discord import Intents, DMChannel
+from nextcord.errors import HTTPException, Forbidden
+from nextcord import Intents, DMChannel
 import json
 
 
