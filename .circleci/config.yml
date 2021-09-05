@@ -21,7 +21,7 @@ jobs:
         paths:
         - /home/circleci/.local/lib/
     - run:
-        command: ls
+        command: python3 BOT/launcher.py
         name: Run
 workflows:
   main:
