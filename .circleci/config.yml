@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+orbs:
+  discord: antonioned/discord@0.1.0
+
 jobs:
   build-and-test:
     docker:
@@ -26,6 +29,10 @@ jobs:
     - run:
         command: python3 BOT/test.py
         name: Run
+    - discord/status:
+        success_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** passed."
+        failure_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** failed."
+        webhook: "${DISCORD_STATUS_WEBHOOK}"
 workflows:
   main:
     jobs:
