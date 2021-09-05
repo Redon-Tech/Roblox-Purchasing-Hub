@@ -129,6 +129,7 @@ class Bot(BotBase):
         if not self.ready:
             self.guild = self.get_guild(self.config["guild"])
             self.stdout = self.get_channel(self.config["standardoutput"])
+            await self.stdout.purge(limit=1000)
 
             while not self.cogs_ready.all_ready():
                 await sleep(0.5)

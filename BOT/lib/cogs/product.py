@@ -2,11 +2,73 @@
     File: /lib/cogs/product.py
     Info: This cog handles all commands related to products
 """
+import nextcord
+from nextcord import message
 from nextcord.ext.commands import Cog, command
-from nextcord import Embed, Colour, colour
+from nextcord import Embed, Colour, colour, ui, Interaction, SelectOption, ButtonStyle
 from datetime import datetime
+
+from nextcord.ui.select import select
+from nextcord.user import BU
 from ..utils.api import *
 from ..utils.database import find
+
+productoptions = []
+
+# Are you sure?
+class AreYouSureView(ui.View):
+    def __init__(self, context, Action, arg1):
+        super().__init__(timeout=None)
+        self.Action = Action
+        self.arg1 = arg1
+        self.context = context
+
+    @ui.button(
+        label="Yes", custom_id="products:yes_I_am_sure", style=ButtonStyle.success
+    )
+    async def iamsure(self, _, interaction: Interaction):
+        if self.Action == "deleteproduct":
+            deleteproduct(self.arg1)
+            await interaction.message.delete()
+            await interaction.channel.send(
+                f"Deleted {self.arg1}.",
+                delete_after=5.0,
+                reference=self.context.message,
+            )
+
+    @ui.button(
+        label="No", custom_id="products:no_I_am_not_sure", style=ButtonStyle.danger
+    )
+    async def noiamnotsure(self, _, interaction: Interaction):
+        await interaction.message.delete()
+        await interaction.channel.send(
+            "Canceled action.", delete_after=5.0, reference=self.context.message
+        )
+
+
+# Delete view
+class DeleteView(ui.View):
+    def __init__(self, context):
+        super().__init__(timeout=None)
+        self.context = context
+        global productoptions
+        for product in getproducts():
+            productoptions.append(
+                SelectOption(label=product["name"], description=product["price"])
+            )
+
+    @ui.select(
+        custom_id="products:delete_select",
+        options=productoptions,  # SelectOption(label="Test", description="Test Option")
+    )
+    async def nextcord_help(self, _, interaction: Interaction):
+        product = str(interaction.data["values"])[2:-2]
+        await interaction.message.delete()
+        await interaction.channel.send(
+            f"Are you sure you would like to delete {product}?",
+            view=AreYouSureView(self.context, "deleteproduct", product),
+            reference=self.context.message,
+        )
 
 
 class Product(Cog):
@@ -177,8 +239,11 @@ class Product(Cog):
         aliases=["removeproduct", "terminateproduct", "fuckoffpieceofshitproduct"],
         description="Delete's a product.",
     )
-    async def deleteproduct(self, ctx, *, name):
-        def emojicheck(self, user):
+    async def deleteproduct(self, ctx):
+        await ctx.send(
+            "Chose a product to delete", view=DeleteView(ctx), reference=ctx.message
+        )
+        """def emojicheck(self, user):
             return user == ctx.author
 
         try:
@@ -232,7 +297,7 @@ class Product(Cog):
             else:
                 await embedmessage.delete()
                 await ctx.send("Canceled", delete_after=5.0, reference=ctx.message)
-                await ctx.message.delete()
+                await ctx.message.delete()"""
 
     @command(
         name="updateproduct",
