@@ -17,9 +17,10 @@ from nextcord.ext.commands import (
 from nextcord.errors import HTTPException, Forbidden
 from nextcord import Intents, DMChannel
 import json
+import os
 
 
-COGS = [path.split("\\")[-1][:-3] for path in glob("./BOT/lib/cogs/*.py")]
+COGS = [path.split(os.sep)[-1][:-3] for path in glob("./BOT/lib/cogs/*.py")]
 
 
 class Ready(object):
