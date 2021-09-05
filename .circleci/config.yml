@@ -1,0 +1,30 @@
+version: 2
+jobs:
+  build-and-test:
+    docker:
+    - image: circleci/python:latest
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - pip-{{ checksum "requirements.txt"  }}
+    - run:
+        command: |
+          if true; then
+            pip install --user -r requirements.txt
+          else
+            pip install -r requirements.txt
+          fi
+        name: Install Dependencies
+    - save_cache:
+        key: pip-{{ checksum "requirements.txt"  }}
+        paths:
+        - /home/circleci/.local/lib/
+    - run:
+        command: python3 ./bot/launcher.py
+        name: Run
+workflows:
+  main:
+    jobs:
+    - build-and-test
+  version: 2
