@@ -2,11 +2,15 @@
     File: /lib/utils/api.py
     Info: This cog defines all the functions for the API.
 """
-from .database import db, insert, update, delete, find
+from .database import db, insert, update, delete, find, find_one
 
 ## Products
 def getproducts():
     return find("products", {})
+
+
+def getproduct(name):
+    return find_one("products", {"name": name})
 
 
 def createproduct(name, description, price):

@@ -61,6 +61,12 @@ def find(data, query):
     return results
 
 
+def find_one(data, query):
+    col = db[data]
+    results = col.find_one(query)
+    return results
+
+
 def findlimit(data, query, limit):
     col = db[data]
     results = col.find(query).limit(limit)

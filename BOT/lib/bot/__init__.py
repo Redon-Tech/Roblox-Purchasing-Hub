@@ -144,6 +144,7 @@ class Bot(BotBase):
             # await meta.set()
 
             if self.istest:
+                await self.stdout.send("This was a test deploy.")
                 await bot.close()
 
         else:
