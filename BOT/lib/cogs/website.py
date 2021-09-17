@@ -8,13 +8,18 @@ from quart import Quart, request
 from ..utils.database import db
 from ..utils.api import *
 from bson.json_util import ObjectId, dumps
+from ro_py import Client
 import json
+import string
+import random
 
 app = Quart(__name__)
 
 # Had to do this cause I cant pass in self in quart
 with open("./BOT/lib/bot/config.json") as config_file:
     config = json.load(config_file)
+roblox = Client()
+verificationkeys = {}
 
 # Define Functions
 
@@ -122,14 +127,20 @@ async def verify_user():
     apikey = request.headers["apikey"]
     if apikey == config["apikey"]:
         info = await request.get_json()
-        try:
-            verifyuser(info["userid"], info["username"])
-            userinfo = getuser(info["userid"])
-            return dumps(userinfo)[1:-1]
-        except:
-            return {"errors": [{"msessage": "Unable to create user"}]}
+        key = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
+        verificationkeys[key] = info["userid"]
+        return {"key": key}
+    # apikey = request.headers["apikey"]
+    # if apikey == config["apikey"]:
+    #    info = await request.get_json()
+    #    try:
+    #        verifyuser(info["userid"], info["username"])
+    #        userinfo = getuser(info["userid"])
+    #        return dumps(userinfo)[1:-1]
+    #    except:
+    #        return {"errors": [{"msessage": "Unable to create user"}]}
     # Based off of Roblox API errors
-    return {"errors": [{"msessage": "Improper API key passed"}]}
+    # return {"errors": [{"msessage": "Improper API key passed"}]}
 
 
 @app.route("/v1/give_product", methods=["POST"])
@@ -177,6 +188,29 @@ class Website(Cog):
     async def website(self, ctx):
         if ctx.message.author.id in self.bot.owner_ids:
             await ctx.send("🟢 Website Online")
+
+    @command(name="verify", description="Verify's you as a user.")
+    async def verify(self, ctx, key):
+        if key in verificationkeys:
+            userid = verificationkeys[key]
+            try:
+                user = await roblox.get_user(userid)
+                username = user.name
+                verifyuser(userid, username)
+                verificationkeys.pop(key)
+                await ctx.send("Verified", delete_after=5.0, reference=ctx.message)
+            except:
+               await ctx.send(
+                   "I was unable to verify you",
+                   delete_after=5.0,
+                   reference=ctx.message,
+               )
+        else:
+            await ctx.send(
+                "The provided key was incorrect please check the key and try again.",
+                delete_after=5.0,
+                reference=ctx.message,
+            )
 
     @Cog.listener()
     async def on_ready(self):

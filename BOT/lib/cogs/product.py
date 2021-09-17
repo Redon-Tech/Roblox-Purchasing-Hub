@@ -9,11 +9,11 @@ from nextcord.ext.commands import Cog, command
 from nextcord import Embed, Colour, colour, ui, Interaction, SelectOption, ButtonStyle
 from datetime import datetime
 from nextcord.ui.button import button
-
 from nextcord.ui.select import select
 from nextcord.user import BU
 from ..utils.api import *  # Imports everything from the API util
 from ..utils.database import find
+import json
 
 productoptions = []
 
