@@ -2,14 +2,132 @@
     File: /lib/cogs/user.py
     Info: This cog handles all the commands for user facing commands
 """
-from nextcord.ext.commands import Cog, command
-from nextcord import Embed, Colour
+import nextcord
+from nextcord.ext.commands import Cog, command, has_permissions, Greedy
+from nextcord import Embed, Colour, Member, colour
 from datetime import datetime
+from typing import Optional
+from ..utils.api import *
 
 
 class User(Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @command(
+        name="profile",
+        aliases=["me", "userinfo", "whois"],
+        description="Returns info about the specified user.",
+    )
+    async def profile(self, ctx, member: Optional[Member]):
+        member = member or ctx.author
+
+        userinfo = getuserfromdiscord(member.id)
+        if userinfo:
+            embed = Embed(
+                title=member.display_name,
+                description=f"Here is the info on {member.mention}",
+                colour=member.colour,
+                timestamp=nextcord.utils.utcnow(),
+            )
+
+            fields = [
+                ("UserID", userinfo["_id"], True),
+                ("Username", userinfo["username"], True),
+                (
+                    "Owned Products",
+                    "\n".join([product for product in userinfo["purchases"]]),
+                    True,
+                ),
+            ]
+
+            for name, value, inline in fields:
+                embed.add_field(name=name, value=value, inline=inline)
+
+            await ctx.send(embed=embed, reference=ctx.message)
+        else:
+            await ctx.send(
+                f"I was unable to find any info on {member.display_name}.",
+                reference=ctx.message,
+            )
+
+    @command(
+        name="giveproduct",
+        aliases=["ammendproduct", "give"],
+        description="Give's a user a product.",
+    )
+    @has_permissions(manage_guild=True)
+    async def giveproduct(self, ctx, members: Greedy[Member], product: str):
+        if not len(members):
+            await ctx.send(
+                f"You left out a vital argument, use {self.bot.PREFIX}help to see all the required arguments.",
+                refrence=ctx.message,
+            )
+
+        elif not getproduct(product):
+            await ctx.send(f"You inputted a incorrect product.", refrence=ctx.message)
+
+        else:
+            for member in members:
+                data = getuserfromdiscord(member.id)
+                if data:
+                    try:
+                        giveproduct(data["_id"], product)
+                    except:
+                        await ctx.send(
+                            f"I was unable to give {member.mention} {product}."
+                        )
+                        members.remove(member)
+                else:
+                    await ctx.send(f"I was unable to give {member.mention} {product}.")
+                    members.remove(member)
+
+            if members:
+                await ctx.send(
+                    "Gave "
+                    + "".join([member.mention for member in members])
+                    + f" {product}."
+                )
+
+    @command(
+        name="revokeproduct",
+        aliases=["remove", "rovoke"],
+        description="Give's a user a product.",
+    )
+    @has_permissions(manage_guild=True)
+    async def revokeproduct(self, ctx, members: Greedy[Member], product: str):
+        if not len(members):
+            await ctx.send(
+                f"You left out a vital argument, use {self.bot.PREFIX}help to see all the required arguments.",
+                refrence=ctx.message,
+            )
+
+        elif not getproduct(product):
+            await ctx.send(f"You inputted a incorrect product.", refrence=ctx.message)
+
+        else:
+            for member in members:
+                data = getuserfromdiscord(member.id)
+                if data:
+                    try:
+                        revokeproduct(data["_id"], product)
+                    except:
+                        await ctx.send(
+                            f"I was unable to revoke {member.mention}'s {product}."
+                        )
+                        members.remove(member)
+                else:
+                    await ctx.send(
+                        f"I was unable to revoke {member.mention}'s {product}."
+                    )
+                    members.remove(member)
+
+            if members:
+                await ctx.send(
+                    "Revoked "
+                    + "".join([member.mention + "'s" for member in members])
+                    + f" {product}."
+                )
 
     @Cog.listener()
     async def on_ready(self):

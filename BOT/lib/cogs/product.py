@@ -5,7 +5,8 @@
 import nextcord
 from nextcord import message
 from nextcord.components import Button
-from nextcord.ext.commands import Cog, command
+from nextcord.errors import Forbidden
+from nextcord.ext.commands import Cog, command, has_permissions
 from nextcord import Embed, Colour, colour, ui, Interaction, SelectOption, ButtonStyle
 from datetime import datetime
 from nextcord.ui.button import button
@@ -62,7 +63,9 @@ class AreYouSureView(ui.View):
                 self.stop()
         if self.Action == "updateproduct":
             try:
-                updateproduct(self.args[0], self.args[1], self.args[2], self.args[3])
+                updateproduct(
+                    self.args[0], self.args[1], self.args[2], self.args[3], self.args[4]
+                )
                 await interaction.message.delete()
                 await interaction.response.send_message(
                     f"Updated {self.args[0]}.",
@@ -131,7 +134,7 @@ class WhatUpdateView(ui.View):
             title=f"Update {self.product['name']}",
             description=f"What would you like to change the name to?",
             colour=Colour.blue(),
-            timestamp=datetime.utcnow(),
+            timestamp=nextcord.utils.utcnow(),
         )
         embed.set_footer(
             text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
@@ -149,7 +152,7 @@ class WhatUpdateView(ui.View):
             await interaction.response.send_message("Timed Out", ephemeral=True)
             self.stop()
 
-        if not message == None and view.canceled == False:
+        if not message is None and view.canceled is False:
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
                 await interaction.response.send_message("Canceled", ephemeral=True)
@@ -165,6 +168,7 @@ class WhatUpdateView(ui.View):
                         message.content,
                         self.product["description"],
                         self.product["price"],
+                        self.product["attachments"],
                     ),
                     reference=self.context.message,
                 )
@@ -179,7 +183,7 @@ class WhatUpdateView(ui.View):
             title=f"Update {self.product['name']}",
             description=f"What would you like to change the description to?",
             colour=Colour.blue(),
-            timestamp=datetime.utcnow(),
+            timestamp=nextcord.utils.utcnow(),
         )
         embed.set_footer(
             text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
@@ -197,7 +201,7 @@ class WhatUpdateView(ui.View):
             await interaction.response.send_message("Timed Out", ephemeral=True)
             self.stop()
 
-        if not message == None and view.canceled == False:
+        if not message is None and view.canceled is False:
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
                 await interaction.response.send_message("Canceled", ephemeral=True)
@@ -213,6 +217,7 @@ class WhatUpdateView(ui.View):
                         self.product["name"],
                         message.content,
                         self.product["price"],
+                        self.product["attachments"],
                     ),
                     reference=self.context.message,
                 )
@@ -223,9 +228,9 @@ class WhatUpdateView(ui.View):
     async def update_price(self, _, interaction: Interaction):
         embed = Embed(
             title=f"Update {self.product['name']}",
-            description=f"What would you like to change the description to?",
+            description=f"What would you like to change the price to?",
             colour=Colour.blue(),
-            timestamp=datetime.utcnow(),
+            timestamp=nextcord.utils.utcnow(),
         )
         embed.set_footer(
             text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
@@ -243,7 +248,7 @@ class WhatUpdateView(ui.View):
             await interaction.response.send_message("Timed Out", ephemeral=True)
             self.stop()
 
-        if not message == None and view.canceled == False:
+        if not message is None and view.canceled is False:
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
                 await interaction.response.send_message("Canceled", ephemeral=True)
@@ -259,9 +264,111 @@ class WhatUpdateView(ui.View):
                         self.product["name"],
                         self.product["description"],
                         int(message.content),
+                        self.product["attachments"],
                     ),
                     reference=self.context.message,
                 )
+
+    @ui.button(
+        label="Attachments",
+        style=ButtonStyle.primary,
+        custom_id="products:update_attachments",
+    )
+    async def update_attachments(self, _, interaction: Interaction):
+        embed = Embed(
+            title=f"Update {self.product['name']}",
+            description=f'Please post the attachments now. Say "Done" when you are done.',
+            colour=Colour.blue(),
+            timestamp=nextcord.utils.utcnow(),
+        )
+
+        embed.set_footer(
+            text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
+        )
+
+        fields = [
+            (
+                "Attachments",
+                "None",
+                False,
+            )
+        ]
+
+        for name, value, inline in fields:
+            embed.add_field(name=name, value=value, inline=inline)
+
+        view = CancelView(self.context)
+        await interaction.message.edit("", embed=embed, view=None)
+
+        def check(m):
+            return m.author == self.context.author
+
+        attachments = []
+
+        while True:
+            try:
+                message = await self.bot.wait_for("message", timeout=600.0, check=check)
+            except TimeoutError:
+                await interaction.message.delete()
+                await interaction.response.send_message("Timed Out", ephemeral=True)
+                self.stop()
+
+            if message.content.lower() == "cancel":
+                await interaction.message.delete()
+                await self.context.send(
+                    "Canceled", reference=self.context.message, delete_after=5.0
+                )
+
+                break
+            if message.content.lower() == "done":
+                break
+            elif not message.attachments == [] and message.attachments:
+                for attachment in message.attachments:
+                    attachments.append(attachment.url)
+                    embed = Embed(
+                        title=f"Update {self.product['name']}",
+                        description=f'Please post the attachments now. Say "Done" when you are done.',
+                        colour=Colour.blue(),
+                        timestamp=nextcord.utils.utcnow(),
+                    )
+
+                    embed.set_footer(
+                        text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
+                    )
+
+                    fields = [
+                        (
+                            "Attachments",
+                            "\n".join([attachment for attachment in attachments]),
+                            False,
+                        )
+                    ]
+
+                    for name, value, inline in fields:
+                        embed.add_field(name=name, value=value, inline=inline)
+
+                    embed.set_footer(text="Pembroke Bot • By: parker02311")
+                    await interaction.message.edit("", embed=embed, view=None)
+                    await self.context.send(
+                        "It is recommended to not delete this message unless needed.",
+                        reference=message,
+                    )
+
+        if attachments:
+            await interaction.message.delete()
+            await self.context.send(
+                f"Are you sure you would like to change {self.product['attachments']} to {attachments}?",
+                view=AreYouSureView(
+                    self.context,
+                    "updateproduct",
+                    self.product["name"],
+                    self.product["name"],
+                    self.product["description"],
+                    self.product["price"],
+                    attachments,
+                ),
+                reference=self.context.message,
+            )
 
     @ui.button(
         label="cancel", style=ButtonStyle.danger, custom_id="products:update_cancel"
@@ -295,7 +402,7 @@ class InitialUpdateView(ui.View):
             title=f"Update {product}",
             description=f"What would you like to change?",
             colour=Colour.blue(),
-            timestamp=datetime.utcnow(),
+            timestamp=nextcord.utils.utcnow(),
         )
         embed.set_footer(text="Redon Tech RPH • By: parker02311")
         await interaction.message.edit(
@@ -318,7 +425,7 @@ class Product(Cog):
             title="Products",
             description=f"Here is all the products I was able to get for this server!",
             colour=ctx.author.colour,
-            timestamp=datetime.utcnow(),
+            timestamp=nextcord.utils.utcnow(),
         )
 
         fields = []
@@ -343,19 +450,52 @@ class Product(Cog):
         await ctx.send(embed=embed, reference=ctx.message)
 
     @command(
+        name="retrieve",
+        aliases=["retrieveproduct", "getproduct"],
+        description="DM's you the specified product if you own it.",
+    )
+    async def retrieveproduct(self, ctx, product: str):
+        userinfo = getuserfromdiscord(ctx.author.id)
+
+        if userinfo:
+            if product in userinfo["purchases"]:
+                embed = Embed(
+                    title="Thank's for your purchase!",
+                    description=f"Thank you for your purchase of {product} please get it by using the links below.",
+                    colour=Colour.from_rgb(255, 255, 255),
+                    timestamp=nextcord.utils.utcnow(),
+                )
+
+                try:
+                    if not ctx.author.dm_channel:
+                        await ctx.author.create_dm()
+
+                    await ctx.author.dm_channel.send(embed=embed)
+
+                    for attachment in getproduct(product)["attachments"]:
+                        await ctx.author.dm_channel.send(attachment)
+                except Forbidden:
+                    await ctx.send(
+                        "Please open your DM's and try again.", reference=ctx.message
+                    )
+
+    @command(
         name="createproduct",
         aliases=["newproduct", "makeproduct"],
         description="Create a new product.",
     )
+    @has_permissions(manage_guild=True)
     async def createproduct(self, ctx):
         questions = [
             "What do you want to call this product?",
             "What do you want the description of the product to be?",
             "What do you want the product price to be?",
+            "attachments",
         ]
         embedmessages = []
         usermessages = []
         awnsers = []
+        attachments = []
 
         def check(m):
             return m.content and m.author == ctx.author
@@ -363,38 +503,125 @@ class Product(Cog):
         def emojicheck(self, user):
             return user == ctx.author
 
+        def attachmentcheck(m):
+            return m.author == ctx.author
+
         for i, question in enumerate(questions):
-            embed = Embed(
-                title=f"Create Product (Question {i+1})",
-                description=question,
-                colour=ctx.author.colour,
-                timestamp=datetime.utcnow(),
-            )
-            embed.set_footer(
-                text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
-            )
-            embedmessage = await ctx.send(embed=embed)
-            embedmessages.append(embedmessage)
-            try:
-                message = await self.bot.wait_for("message", timeout=200.0, check=check)
-            except TimeoutError:
-                await ctx.send("You didn't answer the questions in Time")
-                return
-            if message.content.lower() == "cancel":
-                usermessages.append(message)
-                for message in embedmessages:
-                    await message.delete()
+            if question == "attachments":
+                embed = Embed(
+                    title=f"Create Product (Question {i+1})",
+                    description='Please post any attachments\nSay "Done" when complete',
+                    colour=ctx.author.colour,
+                    timestamp=nextcord.utils.utcnow(),
+                )
 
-                for message in usermessages:
-                    await message.delete()
+                embed.set_footer(
+                    text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
+                )
 
-                await ctx.message.delete()
-                await ctx.send("Canceled", delete_after=5.0)
+                fields = [
+                    (
+                        "Attachments",
+                        "None",
+                        False,
+                    )
+                ]
 
-                break
+                for name, value, inline in fields:
+                    embed.add_field(name=name, value=value, inline=inline)
+
+                embedmessage = await ctx.send(embed=embed)
+                embedmessages.append(embedmessage)
+                while True:
+                    try:
+                        message = await self.bot.wait_for(
+                            "message", timeout=200.0, check=attachmentcheck
+                        )
+                    except TimeoutError:
+                        await ctx.send("You didn't answer the questions in Time")
+                        return
+                    if message.content.lower() == "cancel":
+                        usermessages.append(message)
+                        for message in embedmessages:
+                            await message.delete()
+
+                        for message in usermessages:
+                            await message.delete()
+
+                        await ctx.message.delete()
+                        await ctx.send("Canceled", delete_after=5.0)
+
+                        break
+                    if message.content.lower() == "done":
+                        usermessages.append(message)
+                        break
+                    elif not message.attachments == [] and message.attachments:
+                        for attachment in message.attachments:
+                            attachments.append(attachment.url)
+                            embed = Embed(
+                                title=f"Create Product (Question {i+1})",
+                                description='Please post any attachments\nSay "Done" when complete',
+                                colour=ctx.author.colour,
+                                timestamp=nextcord.utils.utcnow(),
+                            )
+
+                            embed.set_footer(
+                                text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
+                            )
+
+                            fields = [
+                                (
+                                    "Attachments",
+                                    "\n".join(
+                                        [attachment for attachment in attachments]
+                                    ),
+                                    False,
+                                )
+                            ]
+
+                            for name, value, inline in fields:
+                                embed.add_field(name=name, value=value, inline=inline)
+
+                            embed.set_footer(text="Pembroke Bot • By: parker02311")
+                            await embedmessage.edit(embed=embed)
+                            await ctx.send(
+                                "It is recommended to not delete this message unless needed.",
+                                reference=message,
+                            )
             else:
-                usermessages.append(message)
-                awnsers.append(message.content)
+                embed = Embed(
+                    title=f"Create Product (Question {i+1})",
+                    description=question,
+                    colour=ctx.author.colour,
+                    timestamp=nextcord.utils.utcnow(),
+                )
+                embed.set_footer(
+                    text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
+                )
+                embedmessage = await ctx.send(embed=embed)
+                embedmessages.append(embedmessage)
+                try:
+                    message = await self.bot.wait_for(
+                        "message", timeout=200.0, check=check
+                    )
+                except TimeoutError:
+                    await ctx.send("You didn't answer the questions in Time")
+                    return
+                if message.content.lower() == "cancel":
+                    usermessages.append(message)
+                    for message in embedmessages:
+                        await message.delete()
+
+                    for message in usermessages:
+                        await message.delete()
+
+                    await ctx.message.delete()
+                    await ctx.send("Canceled", delete_after=5.0)
+
+                    break
+                else:
+                    usermessages.append(message)
+                    awnsers.append(message.content)
 
         lastbeforefinal = await ctx.send(
             "Creating final message this may take a moment."
@@ -410,13 +637,18 @@ class Product(Cog):
             title="Confirm Product Creation",
             description="✅ to confirm\n❌ to cancel",
             colour=ctx.author.colour,
-            timestamp=datetime.utcnow(),
+            timestamp=nextcord.utils.utcnow(),
         )
 
         fields = [
             ("Name", awnsers[0], False),
             ("Description", awnsers[1], False),
             ("Price", awnsers[2], False),
+            (
+                "Attachments",
+                "\n".join([attachment for attachment in attachments]),
+                False,
+            ),
         ]
 
         for name, value, inline in fields:
@@ -438,7 +670,7 @@ class Product(Cog):
 
         if str(reaction.emoji) == "✅":
             try:
-                createproduct(awnsers[0], awnsers[1], awnsers[2])
+                createproduct(awnsers[0], awnsers[1], awnsers[2], attachments)
             except:
                 await ctx.send(
                     "I was unable to create the product...", delete_after=5.0
@@ -449,13 +681,18 @@ class Product(Cog):
                 title="Product Created",
                 description="The product was successfully created.",
                 colour=ctx.author.colour,
-                timestamp=datetime.utcnow(),
+                timestamp=nextcord.utils.utcnow(),
             )
 
             fields = [
                 ("Name", awnsers[0], False),
                 ("Description", awnsers[1], False),
                 ("Price", awnsers[2], False),
+                (
+                    "Attachments",
+                    "\n".join([attachment for attachment in attachments]),
+                    False,
+                ),
             ]
 
             for name, value, inline in fields:
@@ -471,6 +708,7 @@ class Product(Cog):
         aliases=["removeproduct", "terminateproduct", "fuckoffpieceofshitproduct"],
         description="Delete's a product.",
     )
+    @has_permissions(manage_guild=True)
     async def deleteproduct(self, ctx):
         await ctx.send(
             "Chose a product to delete", view=DeleteView(ctx), reference=ctx.message
@@ -481,6 +719,7 @@ class Product(Cog):
         aliases=["changeproduct"],
         description="Update's a product.",
     )
+    @has_permissions(manage_guild=True)
     async def updateproduct(self, ctx):
         await ctx.send(
             "Chose a product to update.",

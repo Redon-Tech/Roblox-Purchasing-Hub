@@ -13,17 +13,30 @@ def getproduct(name):
     return find_one("products", {"name": name})
 
 
-def createproduct(name, description, price):
+def createproduct(name, description, price, attachments):
     return insert(
-        "products", {"name": name, "description": description, "price": price}
+        "products",
+        {
+            "name": name,
+            "description": description,
+            "price": price,
+            "attachments": attachments,
+        },
     )
 
 
-def updateproduct(oldname, newname, description, price):
+def updateproduct(oldname, newname, description, price, attachments):
     return update(
         "products",
         {"name": oldname},
-        {"$set": {"name": newname, "description": description, "price": price}},
+        {
+            "$set": {
+                "name": newname,
+                "description": description,
+                "price": price,
+                "attachments": attachments,
+            }
+        },
     )
 
 
@@ -33,11 +46,18 @@ def deleteproduct(name):
 
 ## Users
 def getuser(userid):
-    return find("users", {"_id": userid})
+    return find_one("users", {"_id": userid})
 
 
-def verifyuser(userid, username):
-    return insert("users", {"_id": userid, "username": username, "purchases": []})
+def getuserfromdiscord(discordid):
+    return find_one("users", {"discordid": discordid})
+
+
+def verifyuser(userid, discordid, username):
+    return insert(
+        "users",
+        {"_id": userid, "discordid": discordid, "username": username, "purchases": []},
+    )
 
 
 def giveproduct(userid, productname):

@@ -2,8 +2,12 @@
     File: /lib/cogs/website.py
     Info: This cog handles the website which talks to the API.
 """
+from datetime import datetime
+from math import prod
+import nextcord
 from nextcord.ext.commands import Cog, command
 from nextcord.ext.commands.core import Command
+from nextcord import Embed, Colour, colour
 from quart import Quart, request
 from ..utils.database import db
 from ..utils.api import *
@@ -74,9 +78,9 @@ async def create_product():
                 }
             }
         except:
-            return {"errors": [{"msessage": "Unable to delete product"}]}
+            return {"errors": [{"message": "Unable to delete product"}]}
     # Based off of Roblox API errors
-    return {"errors": [{"msessage": "Improper API key passed"}]}
+    return {"errors": [{"message": "Improper API key passed"}]}
 
 
 @app.route("/v1/update_product", methods=["POST"])  # broken idk why
@@ -96,9 +100,9 @@ async def update_product():
             }
         }
         # except:
-        #    return {"errors": [{"msessage": "Unable to update product"}]}
+        #    return {"errors": [{"message": "Unable to update product"}]}
     # Based off of Roblox API errors
-    return {"errors": [{"msessage": "Improper API key passed"}]}
+    return {"errors": [{"message": "Improper API key passed"}]}
 
 
 @app.route("/v1/delete_product", methods=["DELETE"])
@@ -110,9 +114,9 @@ async def delete_product():
             deleteproduct(info["name"])
             return {"message": "Deleted"}
         except:
-            return {"errors": [{"msessage": "Unable to create product"}]}
+            return {"errors": [{"message": "Unable to create product"}]}
     # Based off of Roblox API errors
-    return {"errors": [{"msessage": "Improper API key passed"}]}
+    return {"errors": [{"message": "Improper API key passed"}]}
 
 
 @app.route("/v1/user", methods=["GET"])
@@ -127,20 +131,15 @@ async def verify_user():
     apikey = request.headers["apikey"]
     if apikey == config["apikey"]:
         info = await request.get_json()
-        key = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
-        verificationkeys[key] = info["userid"]
-        return {"key": key}
-    # apikey = request.headers["apikey"]
-    # if apikey == config["apikey"]:
-    #    info = await request.get_json()
-    #    try:
-    #        verifyuser(info["userid"], info["username"])
-    #        userinfo = getuser(info["userid"])
-    #        return dumps(userinfo)[1:-1]
-    #    except:
-    #        return {"errors": [{"msessage": "Unable to create user"}]}
-    # Based off of Roblox API errors
-    # return {"errors": [{"msessage": "Improper API key passed"}]}
+        user = getuser(info["userid"])
+        if not user:
+            key = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
+            verificationkeys[key] = info["userid"]
+            return {"key": key}
+        else:
+            return {"errors": [{"message": "User is already verified"}]}
+
+    return {"errors": [{"message": "Improper API key passed"}]}
 
 
 @app.route("/v1/give_product", methods=["POST"])
@@ -153,9 +152,9 @@ async def give_product():
             userinfo = getuser(info["userid"])
             return dumps(userinfo)[1:-1]
         except:
-            return {"errors": [{"msessage": "Unable to give product"}]}
+            return {"errors": [{"message": "Unable to give product"}]}
     # Based off of Roblox API errors
-    return {"errors": [{"msessage": "Improper API key passed"}]}
+    return {"errors": [{"message": "Improper API key passed"}]}
 
 
 @app.route("/v1/revoke_product", methods=["DELETE"])
@@ -168,9 +167,9 @@ async def revoke_product():
             userinfo = getuser(info["userid"])
             return dumps(userinfo)[1:-1]
         except:
-            return {"errors": [{"msessage": "Unable to revoke product"}]}
+            return {"errors": [{"message": "Unable to revoke product"}]}
     # Based off of Roblox API errors
-    return {"errors": [{"msessage": "Improper API key passed"}]}
+    return {"errors": [{"message": "Improper API key passed"}]}
 
 
 # Bot Handling
@@ -196,15 +195,15 @@ class Website(Cog):
             try:
                 user = await roblox.get_user(userid)
                 username = user.name
-                verifyuser(userid, username)
+                verifyuser(userid, ctx.author.id, username)
                 verificationkeys.pop(key)
                 await ctx.send("Verified", delete_after=5.0, reference=ctx.message)
             except:
-               await ctx.send(
-                   "I was unable to verify you",
-                   delete_after=5.0,
-                   reference=ctx.message,
-               )
+                await ctx.send(
+                    "I was unable to verify you",
+                    delete_after=5.0,
+                    reference=ctx.message,
+                )
         else:
             await ctx.send(
                 "The provided key was incorrect please check the key and try again.",
@@ -221,5 +220,7 @@ class Website(Cog):
 
 
 def setup(bot):
-    bot.loop.create_task(app.run_task("0.0.0.0"))
+    bot.loop.create_task(
+        app.run_task("0.0.0.0")
+    )  # It is highly recomended that you change "0.0.0.0" to your server IP in a production env
     bot.add_cog(Website(bot))
