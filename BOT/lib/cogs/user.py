@@ -17,7 +17,8 @@ class User(Cog):
     @command(
         name="profile",
         aliases=["me", "userinfo", "whois"],
-        description="Returns info about the specified user.",
+        brief="Returns info about the specified user.",
+        catagory="user",
     )
     async def profile(self, ctx, member: Optional[Member]):
         member = member or ctx.author
@@ -54,7 +55,8 @@ class User(Cog):
     @command(
         name="giveproduct",
         aliases=["ammendproduct", "give"],
-        description="Give's a user a product.",
+        brief="Give's a user a product.",
+        catagory="user",
     )
     @has_permissions(manage_guild=True)
     async def giveproduct(self, ctx, members: Greedy[Member], product: str):
@@ -92,7 +94,8 @@ class User(Cog):
     @command(
         name="revokeproduct",
         aliases=["remove", "rovoke"],
-        description="Give's a user a product.",
+        brief="Give's a user a product.",
+        catagory="user",
     )
     @has_permissions(manage_guild=True)
     async def revokeproduct(self, ctx, members: Greedy[Member], product: str):

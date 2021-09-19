@@ -182,13 +182,14 @@ class Website(Cog):
     @command(
         name="website",
         aliases=["web", "ws", "websitestatus"],
-        description="Displays if the website is online.",
+        brief="Displays if the website is online.",
+        catagory="misc",
     )
     async def website(self, ctx):
         if ctx.message.author.id in self.bot.owner_ids:
             await ctx.send("🟢 Website Online")
 
-    @command(name="verify", description="Verify's you as a user.")
+    @command(name="verify", brief="Verify's you as a user.", catagory="user")
     async def verify(self, ctx, key):
         if key in verificationkeys:
             userid = verificationkeys[key]

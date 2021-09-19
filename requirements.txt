@@ -4,5 +4,5 @@ discord==1.7.3
 nextcord
 pymongo==3.12.0
 pymongo[srv]
-git+https://github.com/nextcord/nextcord-ext-ipc
+nextcord-ext-menus
 ro.py

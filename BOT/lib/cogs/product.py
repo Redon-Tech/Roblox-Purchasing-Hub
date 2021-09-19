@@ -417,7 +417,8 @@ class Product(Cog):
     @command(
         name="products",
         aliases=["listproducts", "viewproducts", "allproducts"],
-        description="Sends a list of all products.",
+        brief="Sends a list of all products.",
+        catagory="product",
     )
     async def getproducts(self, ctx):
         dbresponse = getproducts()
@@ -452,7 +453,8 @@ class Product(Cog):
     @command(
         name="retrieve",
         aliases=["retrieveproduct", "getproduct"],
-        description="DM's you the specified product if you own it.",
+        brief="DM's you the specified product if you own it.",
+        catagory="product",
     )
     async def retrieveproduct(self, ctx, product: str):
         userinfo = getuserfromdiscord(ctx.author.id)
@@ -482,7 +484,8 @@ class Product(Cog):
     @command(
         name="createproduct",
         aliases=["newproduct", "makeproduct"],
-        description="Create a new product.",
+        brief="Create a new product.",
+        catagory="product",
     )
     @has_permissions(manage_guild=True)
     async def createproduct(self, ctx):
@@ -706,7 +709,8 @@ class Product(Cog):
     @command(
         name="deleteproduct",
         aliases=["removeproduct", "terminateproduct", "fuckoffpieceofshitproduct"],
-        description="Delete's a product.",
+        brief="Delete's a product.",
+        catagory="product",
     )
     @has_permissions(manage_guild=True)
     async def deleteproduct(self, ctx):
@@ -717,7 +721,8 @@ class Product(Cog):
     @command(
         name="updateproduct",
         aliases=["changeproduct"],
-        description="Update's a product.",
+        brief="Update's a product.",
+        catagory="product",
     )
     @has_permissions(manage_guild=True)
     async def updateproduct(self, ctx):
