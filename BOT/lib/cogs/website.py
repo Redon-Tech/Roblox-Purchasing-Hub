@@ -171,6 +171,13 @@ async def revoke_product():
     # Based off of Roblox API errors
     return {"errors": [{"message": "Improper API key passed"}]}
 
+@app.route("/v1/create_purchase", methods=["POST"])
+async def create_purchase():
+    apikey = request.headers["apikey"]
+    if apikey == config["apikey"]:
+        pass
+
+    return {"errors": [{"message": "Improper API key passed"}]}
 
 # Bot Handling
 
