@@ -10,17 +10,17 @@ jobs:
     - checkout
     - restore_cache:
         keys:
-        - pip-{{ checksum "requirements.txt"  }}
+        - pip-{{ checksum "BOT/requirements.txt"  }}
     - run:
         command: |
           if true; then
-            pip install --user -r requirements.txt
+            pip install --user -r BOT/requirements.txt
           else
-            pip install -r requirements.txt
+            pip install -r BOT/requirements.txt
           fi
         name: Install Dependencies
     - save_cache:
-        key: pip-{{ checksum "requirements.txt"  }}
+        key: pip-{{ checksum "BOT/requirements.txt"  }}
         paths:
         - /home/circleci/.local/lib/
     - run:
