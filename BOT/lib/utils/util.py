@@ -1,11 +1,14 @@
-# ToDo: Finish and test at home not in school
+"""
+    File: /lib/utils/util.py
+    Info: Standard utilility file.
+"""
 
 from quart import request
 
 with open("./BOT/lib/bot/config.json") as config_file:
     config = json.load(config_file)
 
-def requires_api_key(view):
+def require_apikey(view):
     # Makes it so I dont repeat if apikey in every website base.
     @function.wraps(view)
     def wrapper(*args, **kwargs):

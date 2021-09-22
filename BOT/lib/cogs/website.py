@@ -11,6 +11,7 @@ from nextcord import Embed, Colour, colour
 from quart import Quart, request
 from ..utils.database import db
 from ..utils.api import *
+from ..utils.util import require_apikey
 from bson.json_util import ObjectId, dumps
 from ro_py import Client
 import json
@@ -172,12 +173,9 @@ async def revoke_product():
     return {"errors": [{"message": "Improper API key passed"}]}
 
 @app.route("/v1/create_purchase", methods=["POST"])
+@require_apikey
 async def create_purchase():
-    apikey = request.headers["apikey"]
-    if apikey == config["apikey"]:
-        pass
-
-    return {"errors": [{"message": "Improper API key passed"}]}
+    return {"Cool":"Nice"}
 
 # Bot Handling
 
