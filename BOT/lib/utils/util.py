@@ -4,6 +4,7 @@
 """
 
 from quart import request
+import json
 
 with open("./BOT/lib/bot/config.json") as config_file:
     config = json.load(config_file)
