@@ -17,6 +17,7 @@ from ro_py import Client
 import json
 import string
 import random
+import requests
 
 app = Quart(__name__)
 
@@ -158,7 +159,16 @@ async def revoke_product():
 @app.route("/v1/create_purchase", methods=["POST"])
 @require_apikey
 async def create_purchase():
-    return {"Cool": "Nice"}
+    ## TODO: Finish and test
+    return # Do this for now because it will cause a build and test error
+    info = await request.get_json()
+    if info and info["gameid"] and info["name"] and info["price"]:
+        data = [info["gameid"], info["name"], info["price"], info["name"] + " " + info["price"]]
+        cookies = {".ROBLOSECURITY": config["Roblox"]["Cookie"]}
+        request = requests.post("https://www.roblox.com/places/developerproducts/add", data=data, cookies=cookies)
+        
+        if request.status_code == 200:
+            pass
 
 
 # Bot Handling
