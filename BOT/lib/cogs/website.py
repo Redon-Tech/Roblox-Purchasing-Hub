@@ -65,31 +65,27 @@ async def products():
 
 
 @app.route("/v1/create_product", methods=["POST"])
+@require_apikey
 async def create_product():
-    apikey = request.headers["apikey"]
-    if apikey == config["apikey"]:
-        info = await request.get_json()
-        try:
-            createproduct(info["name"], info["description"], info["price"])
-            return {
-                "info": {
-                    "name": info["name"],
-                    "description": info["description"],
-                    "price": info["price"],
-                }
+    info = await request.get_json()
+    try:
+        createproduct(info["name"], info["description"], info["price"])
+        return {
+            "info": {
+                "name": info["name"],
+                "description": info["description"],
+                "price": info["price"],
             }
-        except:
-            return {"errors": [{"message": "Unable to delete product"}]}
-    # Based off of Roblox API errors
-    return {"errors": [{"message": "Improper API key passed"}]}
+        }
+    except:
+        return {"errors": [{"message": "Unable to delete product"}]}
 
 
-@app.route("/v1/update_product", methods=["POST"])  # broken idk why
+@app.route("/v1/update_product", methods=["POST"])
+@require_apikey
 async def update_product():
-    apikey = request.headers["apikey"]
-    if apikey == config["apikey"]:
-        info = await request.get_json()
-        # try:
+    info = await request.get_json()
+    try:
         updateproduct(
             info["oldname"], info["newname"], info["description"], info["price"]
         )
@@ -100,24 +96,19 @@ async def update_product():
                 "price": info["price"],
             }
         }
-        # except:
-        #    return {"errors": [{"message": "Unable to update product"}]}
-    # Based off of Roblox API errors
-    return {"errors": [{"message": "Improper API key passed"}]}
+    except:
+        return {"errors": [{"message": "Unable to update product"}]}
 
 
 @app.route("/v1/delete_product", methods=["DELETE"])
+@require_apikey
 async def delete_product():
-    apikey = request.headers["apikey"]
-    if apikey == config["apikey"]:
-        info = await request.get_json()
-        try:
-            deleteproduct(info["name"])
-            return {"message": "Deleted"}
-        except:
-            return {"errors": [{"message": "Unable to create product"}]}
-    # Based off of Roblox API errors
-    return {"errors": [{"message": "Improper API key passed"}]}
+    info = await request.get_json()
+    try:
+        deleteproduct(info["name"])
+        return {"message": "Deleted"}
+    except:
+        return {"errors": [{"message": "Unable to create product"}]}
 
 
 @app.route("/v1/user", methods=["GET"])
@@ -128,54 +119,47 @@ async def get_user():
 
 
 @app.route("/v1/verify_user", methods=["POST"])
+@require_apikey
 async def verify_user():
-    apikey = request.headers["apikey"]
-    if apikey == config["apikey"]:
-        info = await request.get_json()
-        user = getuser(info["userid"])
-        if not user:
-            key = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
-            verificationkeys[key] = info["userid"]
-            return {"key": key}
-        else:
-            return {"errors": [{"message": "User is already verified"}]}
-
-    return {"errors": [{"message": "Improper API key passed"}]}
+    info = await request.get_json()
+    user = getuser(info["userid"])
+    if not user:
+        key = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
+        verificationkeys[key] = info["userid"]
+        return {"key": key}
+    else:
+        return {"errors": [{"message": "User is already verified"}]}
 
 
 @app.route("/v1/give_product", methods=["POST"])
+@require_apikey
 async def give_product():
-    apikey = request.headers["apikey"]
-    if apikey == config["apikey"]:
-        info = await request.get_json()
-        try:
-            giveproduct(info["userid"], info["productname"])
-            userinfo = getuser(info["userid"])
-            return dumps(userinfo)[1:-1]
-        except:
-            return {"errors": [{"message": "Unable to give product"}]}
-    # Based off of Roblox API errors
-    return {"errors": [{"message": "Improper API key passed"}]}
+    info = await request.get_json()
+    try:
+        giveproduct(info["userid"], info["productname"])
+        userinfo = getuser(info["userid"])
+        return dumps(userinfo)[1:-1]
+    except:
+        return {"errors": [{"message": "Unable to give product"}]}
 
 
 @app.route("/v1/revoke_product", methods=["DELETE"])
+@require_apikey
 async def revoke_product():
-    apikey = request.headers["apikey"]
-    if apikey == config["apikey"]:
-        info = await request.get_json()
-        try:
-            revokeproduct(info["userid"], info["productname"])
-            userinfo = getuser(info["userid"])
-            return dumps(userinfo)[1:-1]
-        except:
-            return {"errors": [{"message": "Unable to revoke product"}]}
-    # Based off of Roblox API errors
-    return {"errors": [{"message": "Improper API key passed"}]}
+    info = await request.get_json()
+    try:
+        revokeproduct(info["userid"], info["productname"])
+        userinfo = getuser(info["userid"])
+        return dumps(userinfo)[1:-1]
+    except:
+        return {"errors": [{"message": "Unable to revoke product"}]}
+
 
 @app.route("/v1/create_purchase", methods=["POST"])
 @require_apikey
 async def create_purchase():
-    return {"Cool":"Nice"}
+    return {"Cool": "Nice"}
+
 
 # Bot Handling
 
