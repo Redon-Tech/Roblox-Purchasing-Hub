@@ -14,10 +14,12 @@ from ..utils.api import *
 from ..utils.util import require_apikey
 from bson.json_util import ObjectId, dumps
 from ro_py import Client
+from bs4 import BeautifulSoup
 import json
 import string
 import random
 import requests
+import re
 
 app = Quart(__name__)
 
@@ -159,16 +161,46 @@ async def revoke_product():
 @app.route("/v1/create_purchase", methods=["POST"])
 @require_apikey
 async def create_purchase():
-    ## TODO: Finish and test
-    return # Do this for now because it will cause a build and test error
     info = await request.get_json()
-    if info and info["gameid"] and info["name"] and info["price"]:
-        data = [info["gameid"], info["name"], info["price"], info["name"] + " " + info["price"]]
-        cookies = {".ROBLOSECURITY": config["Roblox"]["Cookie"]}
-        request = requests.post("https://www.roblox.com/places/developerproducts/add", data=data, cookies=cookies)
-        
-        if request.status_code == 200:
-            pass
+    if info["gameid"] and info["name"] and info["price"]:
+        data = {
+            "universeId": info["gameid"],
+            "name": info["name"],
+            "priceInRobux": info["price"],
+            "description": info["name"] + " " + str(info["price"]),
+        }
+        cookies = {".ROBLOSECURITY": config["roblox"]["cookie"]}
+        # Get the x-csrf-token, this won't actually log you out because there is no x-csrf-token yet.
+        # Basically just exploiting the api to give us a x-csrf-token to use.
+        r1 = requests.post(
+            "https://auth.roblox.com/v2/logout",
+            data=None,
+            cookies=cookies,
+        )
+        if r1.headers["x-csrf-token"]:
+            headers = {"x-csrf-token": r1.headers["x-csrf-token"]}
+            r = requests.post(
+                "https://www.roblox.com/places/developerproducts/add",
+                data=data,
+                cookies=cookies,
+                headers=headers,
+            )
+
+            if r.status_code == 200:
+                return {
+                    "ProductId": "".join(
+                        re.findall(
+                            r"\d",
+                            str(
+                                BeautifulSoup(r.text, "html.parser").find(
+                                    id="DeveloperProductStatus"
+                                )
+                            ),
+                        )
+                    )
+                }
+
+    return {"errors": [{"message": "Unable to create developer product"}]}
 
 
 # Bot Handling
