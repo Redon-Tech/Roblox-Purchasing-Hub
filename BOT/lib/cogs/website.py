@@ -116,9 +116,14 @@ async def delete_product():
 
 @app.route("/v1/user", methods=["GET"])
 async def get_user():
-    info = await request.get_json()
-    dbresponse = getuser(info["userid"])
-    return dumps(dbresponse)[1:-1]
+    try:
+        info = await request.get_json()
+        dbresponse = getuser(info["userid"])
+        if dbresponse == None:
+            return {"errors": [{"message": "Unable to get user"}]}
+        return dumps(dbresponse)
+    except:
+        return {"errors": [{"message": "Something went wrong when getting user"}]}
 
 
 @app.route("/v1/verify_user", methods=["POST"])
@@ -141,7 +146,7 @@ async def give_product():
     try:
         giveproduct(info["userid"], info["productname"])
         userinfo = getuser(info["userid"])
-        return dumps(userinfo)[1:-1]
+        return dumps(userinfo)
     except:
         return {"errors": [{"message": "Unable to give product"}]}
 
@@ -153,7 +158,7 @@ async def revoke_product():
     try:
         revokeproduct(info["userid"], info["productname"])
         userinfo = getuser(info["userid"])
-        return dumps(userinfo)[1:-1]
+        return dumps(userinfo)
     except:
         return {"errors": [{"message": "Unable to revoke product"}]}
 

@@ -10,7 +10,7 @@
 
 --// Settings \\--
 local Server = "http://127.0.0.1"
-local ApiKey = script.Parent.Parent.Configuration.ApiKey
+local ApiKey = "test"
 
 
 
@@ -76,8 +76,27 @@ RFs.Verified = function(Player, HasAlreadyReceivedCode)
     local Request = HttpService:RequestAsync({
       Url = Server.. "/v1/verify_user",
       Method = "POST",
+      Headers = {apikey = ApiKey},
       Body = HttpService:JSONEncode({userid = Player.UserId})
     })
+    local Data = HttpService:JSONDecode(Request.Body)
+    if Data.key then
+      return Data.key
+    else
+      return true
+    end
+  else
+    local Request = HttpService:RequestAsync({
+      Url = Server.. "/v1/user",
+      Method = "GET",
+      Body = HttpService:JSONEncode({userid = Player.UserId})
+    })
+    local Data = HttpService:JSONDecode(Request.Body)
+    if Data.errors then
+      return false
+    else
+      return true
+    end
   end
 end
 
