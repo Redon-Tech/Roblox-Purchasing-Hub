@@ -10,7 +10,7 @@
 
 --// Settings \\--
 local Server = "http://127.0.0.1"
-
+local ApiKey = script.Parent.Parent.Configuration.ApiKey
 
 
 
@@ -49,3 +49,50 @@ local Server = "http://127.0.0.1"
 
 --// Functions \\--
 -- DO NOT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING
+
+local RemoteEvent = game.ReplicatedStorage.Common.RemoteEvent
+local REs = {}
+local RemoteFunction = game.ReplicatedStorage.Common.RemoteFunction
+local RFs = {}
+local HttpService = game:GetService("HttpService")
+local Online = false
+
+local function checkonline()
+  local Request = HttpService:RequestAsync({
+    Url = Server.. "/v1/status",
+    Method = "GET",
+  })
+  local Data = HttpService:JSONDecode(Request.Body)
+  if Data.message == "Ok" and Data.info.api == "Ok" and Data.info.database == "Ok" then
+    Online = true
+  else
+    Online = false
+  end
+end
+checkonline()
+
+RFs.Verified = function(Player, HasAlreadyReceivedCode)
+  if not HasAlreadyReceivedCode then
+    local Request = HttpService:RequestAsync({
+      Url = Server.. "/v1/verify_user",
+      Method = "POST",
+      Body = HttpService:JSONEncode({userid = Player.UserId})
+    })
+  end
+end
+
+RemoteEvent.OnServerEvent:Connect(function(plr, fnc, ...)
+  REs[fnc](plr, ...)
+end)
+
+RemoteFunction.OnServerInvoke = function(plr, fnc, ...)
+  return REs[fnc](plr, ...)
+end
+
+game.Players.PlayerAdded:Connect(function(player)
+  RemoteEvent:FireClient(player, "Online", Online)
+  player.CharacterAdded:Connect(function(Character)
+    Character.Humanoid.WalkSpeed = 0
+    Character.Humanoid.JumpPower = 0
+  end)
+end)

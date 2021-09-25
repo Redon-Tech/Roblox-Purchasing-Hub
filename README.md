@@ -14,6 +14,8 @@
 
 This system is still a major work in progress stay tunned for release!
 
+Please ignore everything below for now.
+
 # Table of Contents
 
 Go to the top left and hit the list button to see the table of contents!
@@ -25,11 +27,10 @@ This purchasing system is designed to be just a great as other systems such as m
 
 ## Features
 
-- 
+- Product Purchasing (Cart System)
 
 ## Planed Features
 
-- Product Purchasing (Cart System)
 - Product Whitelist
 - Product Transfer
 - Product Loaning
@@ -57,10 +58,10 @@ If you have any suggestions join the Discord and let us know!
 
 ## TD
 
-| Status      | Name              | Description                                                                                                                                   |
-| ----------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Complete    | Product API       | Create, delete, update products                                                                                                               |
-| Complete    | User API          | Verify, give products, revoke products                                                                                                        |
-| In Progress | Bot Commands      | Commands to create, delete, update product and verify, give products, and revoke                                                              |
-| Planned     | Create hub GUI    | A simple UI that does not need to be advanced.                                                                                                |
-| Planned     | Developer Product | A system that creates developer products automatically to make a cart system. It will reuse old developer products that have the price needed |
+| Status      | Name              | Description                                                                      |
+| ----------- | ----------------- | -------------------------------------------------------------------------------- |
+| Complete    | Product API       | Create, delete, update products                                                  |
+| Complete    | User API          | Verify, give products, revoke products                                           |
+| Complete    | Bot Commands      | Commands to create, delete, update product and verify, give products, and revoke |
+| In Progress | Create hub GUI    | A simple UI that does not need to be advanced.                                   |
+| Complete    | Developer Product | A system that creates developer products automatically to make a cart system.    |
