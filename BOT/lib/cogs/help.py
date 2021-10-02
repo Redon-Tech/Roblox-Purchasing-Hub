@@ -4,10 +4,16 @@
 """
 import nextcord
 from nextcord.ext.commands import Cog, command
-from nextcord.ext.menus import ButtonMenuPages, ListPageSource
+from nextcord.ext.menus import (
+    MenuPagesBase,
+    ButtonMenu,
+    ListPageSource,
+    MenuPaginationButton,
+    PageSource,
+)
 from nextcord.utils import get
 from nextcord import Embed, Colour, ui, Interaction, SelectOption
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -24,9 +30,135 @@ def syntax(command):
     return f"```{cmd_and_aliases} {params}```"
 
 
+# Had to redifine it due to some checking issues but is a copy of the official one otherwise
+class ButtonMenuPages(MenuPagesBase, ButtonMenu):
+    def __init__(
+        self,
+        source: PageSource,
+        style: nextcord.ButtonStyle = nextcord.ButtonStyle.secondary,
+        **kwargs,
+    ):
+        self.__button_menu_pages__ = True
+        kwargs["disable_buttons_after"] = kwargs.get("disable_buttons_after", True)
+        super().__init__(source, **kwargs)
+        if not self.__inherit_buttons__:
+            return
+        for emoji in (
+            self.FIRST_PAGE,
+            self.PREVIOUS_PAGE,
+            self.NEXT_PAGE,
+            self.LAST_PAGE,
+            self.STOP,
+        ):
+            if (
+                emoji in {self.FIRST_PAGE, self.LAST_PAGE}
+                and self._skip_double_triangle_buttons()
+            ):
+                continue
+            self.add_item(MenuPaginationButton(emoji=emoji, style=style))
+        self._disable_unavailable_buttons()
+
+    def _disable_unavailable_buttons(self):
+        buttons: List[MenuPaginationButton] = self.children
+        max_pages = self._source.get_max_pages()
+        for button in buttons:
+            if not button.custom_id == "help:select_catagory":
+                if button.emoji.name in (self.FIRST_PAGE, self.PREVIOUS_PAGE):
+                    button.disabled = self.current_page == 0
+                elif max_pages and button.emoji.name in (
+                    self.LAST_PAGE,
+                    self.NEXT_PAGE,
+                ):
+                    button.disabled = self.current_page == max_pages - 1
+
+
+class HelpSelect(ui.Select):
+    def __init__(self, context, commands, loadedcommands):
+        self.context = context
+        self.commands = commands
+        self.usercommands = []
+        self.productcommands = []
+        self.othercommands = []
+        for command in commands:
+            if command.cog.qualified_name == "User" or command.name == "verify":
+                self.usercommands.append(command)
+            elif command.cog.qualified_name == "Product":
+                self.productcommands.append(command)
+            else:
+                self.othercommands.append(command)
+        placeholder = ""
+        if loadedcommands == self.usercommands:
+            placeholder = "User"
+        elif loadedcommands == self.productcommands:
+            placeholder = "Product"
+        elif loadedcommands == self.othercommands:
+            placeholder = "Misc"
+        else:
+            placeholder = "All"
+        super().__init__(
+            custom_id="help:select_catagory",
+            options=[
+                SelectOption(label="All", description="View help on all commands."),
+                SelectOption(
+                    label="User", description="View help on all user commands."
+                ),
+                SelectOption(
+                    label="Product", description="View help on all product commands."
+                ),
+                SelectOption(
+                    label="Misc", description="View help on all other commands."
+                ),
+            ],
+            row=1,
+            placeholder=placeholder,
+        )
+
+    async def callback(self, interaction: Interaction):
+        selection = str(interaction.data["values"])[2:-2]
+
+        if selection:
+            if selection == "All":
+                menu = ButtonMenuPages(
+                    source=HelpMenu(self.context, self.commands, self.commands),
+                    clear_reactions_after=True,
+                    timeout=60.0,
+                    style=nextcord.ButtonStyle.primary,
+                )
+                await menu.start(self.context)
+                await interaction.message.delete()
+            elif selection == "User":
+                menu = ButtonMenuPages(
+                    source=HelpMenu(self.context, self.commands, self.usercommands),
+                    clear_reactions_after=True,
+                    timeout=60.0,
+                    style=nextcord.ButtonStyle.primary,
+                )
+                await menu.start(self.context)
+                await interaction.message.delete()
+            elif selection == "Product":
+                menu = ButtonMenuPages(
+                    source=HelpMenu(self.context, self.commands, self.productcommands),
+                    clear_reactions_after=True,
+                    timeout=60.0,
+                    style=nextcord.ButtonStyle.primary,
+                )
+                await menu.start(self.context)
+                await interaction.message.delete()
+            elif selection == "Misc":
+                menu = ButtonMenuPages(
+                    source=HelpMenu(self.context, self.commands, self.othercommands),
+                    clear_reactions_after=True,
+                    timeout=60.0,
+                    style=nextcord.ButtonStyle.primary,
+                )
+                await menu.start(self.context)
+                await interaction.message.delete()
+
+
 class HelpMenu(ListPageSource):
-    def __init__(self, ctx, data):
+    def __init__(self, ctx, commands, data):
         self.ctx = ctx
+        self.commands = commands
 
         super().__init__(data, per_page=5)
 
@@ -49,82 +181,32 @@ class HelpMenu(ListPageSource):
 
         return embed
 
-    async def format_page(self, menu, entries):
+    async def format_page(self, menu: ButtonMenuPages, entries):
         fields = []
 
         for entry in entries:
             fields.append((entry.brief or "No description", syntax(entry)))
 
-        return await self.write_page(menu, fields)
+        menu.clear_items()
+        menu.add_item(
+            MenuPaginationButton(
+                emoji=menu.PREVIOUS_PAGE, style=nextcord.ButtonStyle.primary
+            )
+        )
+        menu.add_item(
+            MenuPaginationButton(
+                emoji=menu.NEXT_PAGE, style=nextcord.ButtonStyle.primary
+            )
+        )
+        menu.add_item(
+            MenuPaginationButton(emoji=menu.STOP, style=nextcord.ButtonStyle.primary)
+        )
 
+        menu.add_item(HelpSelect(self.ctx, self.commands, entries))
 
-class HelpSelect(ui.View):
-    def __init__(self, context, commands, *, timeout: Optional[float] = 180):
-        super().__init__(timeout=timeout)
-        self.context = context
-        self.commands = commands
+        menu._disable_unavailable_buttons()
 
-    @ui.select(
-        custom_id="help:select_catagory",
-        options=[
-            SelectOption(label="All", description="View help on all commands."),
-            SelectOption(label="User", description="View help on all user commands."),
-            SelectOption(
-                label="Product", description="View help on all product commands."
-            ),
-            SelectOption(label="Misc", description="View help on all other commands."),
-        ],
-    )
-    async def select_catagory(self, _, interaction: Interaction):
-        selection = str(interaction.data["values"])[2:-2]
-        usercommands = []
-        productcommands = []
-        othercommands = []
-        for command in self.commands:
-            if command.cog.qualified_name == "User" or command.name == "verify":
-                usercommands.append(command)
-            elif command.cog.qualified_name == "Product":
-                productcommands.append(command)
-            else:
-                othercommands.append(command)
-
-        if selection:
-            if selection == "All":
-                menu = ButtonMenuPages(
-                    source=HelpMenu(self.context, self.commands),
-                    clear_reactions_after=True,
-                    timeout=60.0,
-                    style=nextcord.ButtonStyle.primary,
-                )
-                await menu.start(self.context)
-                await interaction.message.delete()
-            elif selection == "User":
-                menu = ButtonMenuPages(
-                    source=HelpMenu(self.context, usercommands),
-                    clear_reactions_after=True,
-                    timeout=60.0,
-                    style=nextcord.ButtonStyle.primary,
-                )
-                await menu.start(self.context)
-                await interaction.message.delete()
-            elif selection == "Product":
-                menu = ButtonMenuPages(
-                    source=HelpMenu(self.context, productcommands),
-                    clear_reactions_after=True,
-                    timeout=60.0,
-                    style=nextcord.ButtonStyle.primary,
-                )
-                await menu.start(self.context)
-                await interaction.message.delete()
-            elif selection == "Misc":
-                menu = ButtonMenuPages(
-                    source=HelpMenu(self.context, othercommands),
-                    clear_reactions_after=True,
-                    timeout=60.0,
-                    style=nextcord.ButtonStyle.primary,
-                )
-                await menu.start(self.context)
-                await interaction.message.delete()
+        return {"embed": await self.write_page(menu, fields), "view": menu}
 
 
 class Help(Cog):
@@ -145,15 +227,13 @@ class Help(Cog):
     @command(name="help", brief="Shows this message", catagory="misc")
     async def show_help(self, ctx, cmd: Optional[str]):
         if cmd is None:
-            embed = Embed(
-                title="Help",
-                description="Get help on commands!",
-                colour=ctx.author.colour,
-                timestamp=nextcord.utils.utcnow(),
+            menu = ButtonMenuPages(
+                source=HelpMenu(ctx, list(self.bot.commands), list(self.bot.commands)),
+                clear_reactions_after=True,
+                timeout=60.0,
+                style=nextcord.ButtonStyle.primary,
             )
-            await ctx.send(
-                embed=embed, view=HelpSelect(ctx, commands=list(self.bot.commands))
-            )
+            await menu.start(ctx)
 
         else:
             if command := get(self.bot.commands, name=cmd):
