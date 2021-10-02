@@ -9,7 +9,7 @@
 ]]
 
 --// Settings \\--
-local Server = "http://127.0.0.1"
+local Server = "http://143.198.139.168:25503"
 local ApiKey = "test"
 
 
@@ -58,13 +58,20 @@ local HttpService = game:GetService("HttpService")
 local Online = false
 
 local function checkonline()
-  local Request = HttpService:RequestAsync({
-    Url = Server.. "/v1/status",
-    Method = "GET",
-  })
-  local Data = HttpService:JSONDecode(Request.Body)
-  if Data.message == "Ok" and Data.info.api == "Ok" and Data.info.database == "Ok" then
-    Online = true
+  local Success, Request = pcall(function()
+    return HttpService:RequestAsync({
+      Url = Server.. "/v1/status",
+      Method = "GET",
+    })
+  end)
+
+  if Success then
+    local Data = HttpService:JSONDecode(Request.Body)
+    if Data.message == "Ok" and Data.info.api == "Ok" and Data.info.database == "Ok" then
+      Online = true
+    else
+      Online = false
+    end
   else
     Online = false
   end
@@ -76,9 +83,13 @@ RFs.Verified = function(Player, HasAlreadyReceivedCode)
     local Request = HttpService:RequestAsync({
       Url = Server.. "/v1/verify_user",
       Method = "POST",
-      Headers = {apikey = ApiKey},
+      Headers = {
+        ["Content-Type"] = "application/json",
+        apikey = ApiKey
+      },
       Body = HttpService:JSONEncode({userid = Player.UserId})
     })
+
     local Data = HttpService:JSONDecode(Request.Body)
     if Data.key then
       return Data.key
@@ -105,13 +116,21 @@ RemoteEvent.OnServerEvent:Connect(function(plr, fnc, ...)
 end)
 
 RemoteFunction.OnServerInvoke = function(plr, fnc, ...)
-  return REs[fnc](plr, ...)
+  return RFs[fnc](plr, ...)
 end
 
-game.Players.PlayerAdded:Connect(function(player)
-  RemoteEvent:FireClient(player, "Online", Online)
+for i,player in pairs(game.Players:GetPlayers()) do
   player.CharacterAdded:Connect(function(Character)
     Character.Humanoid.WalkSpeed = 0
     Character.Humanoid.JumpPower = 0
   end)
+  RemoteEvent:FireClient(player, "Online", Online)
+end
+
+game.Players.PlayerAdded:Connect(function(player)
+  player.CharacterAdded:Connect(function(Character)
+    Character.Humanoid.WalkSpeed = 0
+    Character.Humanoid.JumpPower = 0
+  end)
+  RemoteEvent:FireClient(player, "Online", Online)
 end)
