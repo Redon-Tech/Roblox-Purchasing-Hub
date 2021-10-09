@@ -114,7 +114,9 @@ async def delete_product():
         return {"errors": [{"message": "Unable to create product"}]}
 
 
-@app.route("/v1/user", methods=["GET"])
+@app.route(
+    "/v1/user", methods=["GET", "POST"]
+)  # Had to define as POST as well due to Roblox
 async def get_user():
     try:
         info = await request.get_json()
