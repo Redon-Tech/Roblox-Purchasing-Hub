@@ -44,7 +44,41 @@ If you have any suggestions join the Discord and let us know!
 
 ## Bot & API
 
+### Requirements
+- Get a computer or VPS to host the bot on.
+  - Make sure it has a port open for the bot to run on.
+  - Note: Glitch will not work for hosting unless you have boosted your project. Replit and Heroku will work as long as you ping it to keep it online.
+- Have a database setup on [MongoDB](https://www.mongodb.com/)
+- Have a [Discord bot](https://discord.com/developers) setup and the token ready.
+- Have a Roblox cookie ready. (Toturial on how to get soon)
+- Python 3.9 Installed(With pip)
 
+### Installation
+1. Clone this repository into the directory you want it in.
+    ```
+    Via Git:
+    git clone https://github.com/Redon-Tech/Roblox-Purchasing-Hub
+    ```
+2. Install requirements
+    ```
+    cd /BOT
+    pip3 install requirements.txt
+    ```
+    If that isnt working do
+    ```
+    pip install requirements.txt
+    ```
+3. In BOT/lib/bot clone the config.example.json and rename it to config.json
+4. Edit config.json and update it with all the proper information
+5. Run the bot by executing BOT/launcher.py
+    ```
+    python3 launcher.py
+    ```
+    If that isnt working do
+    ```
+    python launcher.py
+    ```
+6. Test that the bot is online by using `{prefix}help`
 
 ## Roblox
 
