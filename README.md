@@ -52,31 +52,38 @@ If you have any suggestions join the Discord and let us know!
 - Have a [Discord bot](https://discord.com/developers) setup and the token ready.
 - Have a Roblox cookie ready. (Toturial on how to get soon)
 - Python 3.9 Installed(With pip)
+- Git installed for fast setup
 
 ### Installation
 1. Clone this repository into the directory you want it in.
-    ```
+    
     Via Git:
+    ```
     git clone https://github.com/Redon-Tech/Roblox-Purchasing-Hub
+    ```
+    Via Get(Development Version):
+    ```
+    git clone -b development https://github.com/Redon-Tech/Roblox-Purchasing-Hub
     ```
 2. Install requirements
     ```
-    cd /BOT
-    pip3 install requirements.txt
+    cd Roblox-Purchasing-Hub
+
+    pip3 install -r BOT/requirements.txt
     ```
     If that isnt working do
     ```
-    pip install requirements.txt
+    pip install -r BOT/requirements.txt
     ```
 3. In BOT/lib/bot clone the example.config.json and rename it to config.json
 4. Edit config.json and update it with all the proper information (Guide on configuration below)
 5. Run the bot by executing BOT/launcher.py
     ```
-    python3 launcher.py
+    python3 BOT/launcher.py
     ```
     If that isnt working do
     ```
-    python launcher.py
+    python BOT/launcher.py
     ```
 6. Test that the bot is online by using `{prefix}help` (Default Prefix: ".")
 
