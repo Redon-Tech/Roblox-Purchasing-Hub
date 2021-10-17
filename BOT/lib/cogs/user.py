@@ -37,7 +37,7 @@ class User(Cog):
                 ("Username", userinfo["username"], True),
                 (
                     "Owned Products",
-                    "\n".join([product for product in userinfo["purchases"]]),
+                    "\n".join([product for product in userinfo["purchases"]]) or "None",
                     True,
                 ),
             ]
