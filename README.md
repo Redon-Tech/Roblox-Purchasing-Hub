@@ -6,7 +6,7 @@
   [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)](https://github.com/psf/black)
   [![GitHub](https://img.shields.io/github/license/redon-tech/Roblox-Purchasing-Hub?style=for-the-badge)](https://mit-license.org/)
   [![GitHub release (latest by date)](https://img.shields.io/github/v/release/redon-tech/Roblox-Purchasing-Hub?style=for-the-badge)](https://github.com/Redon-Tech/Roblox-Purchasing-Hub/releases)
-  [![CodeFactor](https://img.shields.io/codefactor/grade/github/Redon-Tech/Roblox-Purchasing-Hub/development?style=for-the-badge)](https://www.codefactor.io/repository/github/redon-tech/roblox-purchasing-hub/overview/development)
+  [![CodeFactor](https://img.shields.io/codefactor/grade/github/Redon-Tech/Roblox-Purchasing-Hub?style=for-the-badge)](https://www.codefactor.io/repository/github/redon-tech/roblox-purchasing-hub/overview)
   
 </div>
 
