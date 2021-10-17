@@ -1,0 +1,17 @@
+{
+    "token": "",
+    "prefix": ".",
+    "ownerids": [
+        1234567890
+    ],
+    "guild": 1234567890,
+    "standardoutput": 123467890,
+    "usepages": true,
+    "mongodb": {
+        "url": "mongodburl"
+    },
+    "roblox": {
+        "cookie": "fullrobloxcookie"
+    },
+    "apikey": "generatearandomstringforthis"
+}

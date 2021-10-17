@@ -1,0 +1,22 @@
+"""
+    File: /lib/cogs/{{name}}.py
+    Info: {{info}}
+"""
+from nextcord.ext.commands import Cog, command
+from nextcord import Embed, Colour
+from datetime import datetime
+
+
+class {{Name}}(Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @Cog.listener()
+    async def on_ready(self):
+        if not self.bot.ready:
+            self.bot.cogs_ready.ready_up("{{name}}")
+            await self.bot.stdout.send("`/lib/cogs/{{name}}.py` ready")
+            print(" /lib/cogs/{{name}}.py ready")
+
+def setup(bot):
+    bot.add_cog({{Name}}(bot))

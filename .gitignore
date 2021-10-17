@@ -1,3 +1,9 @@
+# Config file bcause I am to lazy to make a env on my computer
+config.json
+
+# Roblox Files
+*.rblx.lock
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -14,7 +20,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -127,3 +132,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+*.lock

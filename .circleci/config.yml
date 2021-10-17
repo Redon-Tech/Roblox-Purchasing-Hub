@@ -1,0 +1,40 @@
+version: 2.1
+orbs:
+  discord: antonioned/discord@0.1.0
+
+jobs:
+  build-and-test:
+    docker:
+    - image: circleci/python:latest
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - pip-{{ checksum "BOT/requirements.txt"  }}
+    - run:
+        command: |
+          if true; then
+            pip install --user -r BOT/requirements.txt
+          else
+            pip install -r BOT/requirements.txt
+          fi
+        name: Install Dependencies
+    - save_cache:
+        key: pip-{{ checksum "BOT/requirements.txt"  }}
+        paths:
+        - /home/circleci/.local/lib/
+    - run:
+        command: echo $config > BOT/lib/bot/config.json
+        name: Create Config File
+    - run:
+        command: python3 BOT/test.py
+        name: Run
+    - discord/status:
+        success_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** passed."
+        failure_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** failed."
+        webhook: "${DISCORD_STATUS_WEBHOOK}"
+workflows:
+  main:
+    jobs:
+    - build-and-test
+  version: 2
