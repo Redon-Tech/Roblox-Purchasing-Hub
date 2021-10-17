@@ -42,6 +42,8 @@ If you have any suggestions join the Discord and let us know!
 
 # Installation
 
+[Video](https://youtu.be/0eVR3i_ZKoQ)
+
 ## Bot & API
 
 ### Requirements
