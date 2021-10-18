@@ -59,7 +59,7 @@ class User(Cog):
         catagory="user",
     )
     @has_permissions(manage_guild=True)
-    async def giveproduct(self, ctx, members: Greedy[Member], product: str):
+    async def giveproduct(self, ctx, members: Greedy[Member], *, product: str):
         if not len(members):
             await ctx.send(
                 f"You left out a vital argument, use {self.bot.PREFIX}help to see all the required arguments.",
@@ -98,7 +98,7 @@ class User(Cog):
         catagory="user",
     )
     @has_permissions(manage_guild=True)
-    async def revokeproduct(self, ctx, members: Greedy[Member], product: str):
+    async def revokeproduct(self, ctx, members: Greedy[Member], *, product: str):
         if not len(members):
             await ctx.send(
                 f"You left out a vital argument, use {self.bot.PREFIX}help to see all the required arguments.",
