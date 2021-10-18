@@ -59,6 +59,7 @@ async def status():
 
 
 @app.route("/v1/products", methods=["GET"])
+@require_apikey
 async def products():
     dbresponse = getproducts()
     results = {}
