@@ -456,7 +456,7 @@ class Product(Cog):
         brief="DM's you the specified product if you own it.",
         catagory="product",
     )
-    async def retrieveproduct(self, ctx, product: str):
+    async def retrieveproduct(self, ctx, *, product: str):
         userinfo = getuserfromdiscord(ctx.author.id)
 
         if userinfo:
