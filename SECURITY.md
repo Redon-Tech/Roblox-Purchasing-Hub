@@ -6,7 +6,8 @@ We only support security on currently released versions of our system all develo
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.x   | :x:                |
+| 0.x.x   | :x:                |
+| 1.x.x   | ✅                 |
 
 ## Reporting a Vulnerability
 
