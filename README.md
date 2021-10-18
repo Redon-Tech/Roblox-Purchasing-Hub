@@ -10,12 +10,6 @@
   
 </div>
 
-# Work In Progress
-
-This system is still a major work in progress stay tunned for release!
-
-Please ignore everything below for now.
-
 # Table of Contents
 
 Go to the top left and hit the list button to see the table of contents!
