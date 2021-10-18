@@ -118,7 +118,7 @@ If you have any suggestions join the Discord and let us know!
 
 ## Roblox
 
-## Fast Installation
+### Fast Installation
 For creating a new place.
 1. Download the RBXL file from the [latest release full](https://github.com/Redon-Tech/Roblox-Purchasing-Hub/releases).
 2. Open the file.
@@ -128,7 +128,7 @@ For creating a new place.
 6. Change PlaceId to the a PlaceId of which your Roblox bot can create developer products on.
 7. Publish and make sure HttpRequests is on.
 
-## Manual Installation
+### Manual Installation
 
 1. Download the RBXM file from the [latest release full](https://github.com/Redon-Tech/Roblox-Purchasing-Hub/releases).
 2. Put it into your place
