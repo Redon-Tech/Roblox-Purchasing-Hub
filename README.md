@@ -10,12 +10,6 @@
   
 </div>
 
-# Work In Progress
-
-This system is still a major work in progress stay tunned for release!
-
-Please ignore everything below for now.
-
 # Table of Contents
 
 Go to the top left and hit the list button to see the table of contents!
@@ -124,7 +118,7 @@ If you have any suggestions join the Discord and let us know!
 
 ## Roblox
 
-## Fast Installation
+### Fast Installation
 For creating a new place.
 1. Download the RBXL file from the [latest release full](https://github.com/Redon-Tech/Roblox-Purchasing-Hub/releases).
 2. Open the file.
@@ -134,7 +128,7 @@ For creating a new place.
 6. Change PlaceId to the a PlaceId of which your Roblox bot can create developer products on.
 7. Publish and make sure HttpRequests is on.
 
-## Manual Installation
+### Manual Installation
 
 1. Download the RBXM file from the [latest release full](https://github.com/Redon-Tech/Roblox-Purchasing-Hub/releases).
 2. Put it into your place
@@ -156,6 +150,12 @@ For creating a new place.
 # Developer Info
 
 ## TD
+
+### V1.1
+| Status   | Name              | Description                                                                      |
+| -------- | ----------------- | -------------------------------------------------------------------------------- |
+| Not Started | Unlink | Allow users to unlink and relink |
+| Not Started | Transfer | Allow users to transfer product whitelists |
 
 ### V1.0
 

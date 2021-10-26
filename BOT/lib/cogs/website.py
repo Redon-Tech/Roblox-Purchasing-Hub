@@ -54,11 +54,12 @@ async def status():
     result = db.command("serverStatus")
     if result:
         return {"message": "Ok", "info": {"api": "Ok", "database": "Ok"}}
-    else:
-        return {"message": "Ok", "info": {"api": "Ok", "database": "Error"}}
+    
+    return {"message": "Ok", "info": {"api": "Ok", "database": "Error"}}
 
 
 @app.route("/v1/products", methods=["GET"])
+@require_apikey
 async def products():
     dbresponse = getproducts()
     results = {}
@@ -137,8 +138,8 @@ async def verify_user():
         key = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
         verificationkeys[key] = info["userid"]
         return {"key": key}
-    else:
-        return {"errors": [{"message": "User is already verified"}]}
+    
+    return {"errors": [{"message": "User is already verified"}]}
 
 
 @app.route("/v1/give_product", methods=["POST"])
