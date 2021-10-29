@@ -49,10 +49,11 @@ If you have any suggestions join the Discord and let us know!
 ## TD
 
 ### V1.1
-| Status   | Name              | Description                                                                      |
-| -------- | ----------------- | -------------------------------------------------------------------------------- |
-| Not Started | Unlink | Allow users to unlink and relink |
-| Not Started | Transfer | Allow users to transfer product whitelists |
+| Status      | Name        | Description                                |
+| ----------- | ----------- | ------------------------------------------ |
+| Not Started | Unlink      | Allow users to unlink and relink           |
+| Not Started | Transfer    | Allow users to transfer product whitelists |
+| In Progress | QOL Changes | Quality Of Life Changes                    |
 
 ### V1.0
 

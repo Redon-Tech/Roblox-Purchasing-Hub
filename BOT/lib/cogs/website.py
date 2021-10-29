@@ -44,6 +44,28 @@ app.json_encoder = MyEncoder
 # Website Handling
 
 
+@app.errorhandler(400)
+async def error400(error):
+    return {"errors": [{"code": 400, "message": "Unable to read that request"}]}
+
+
+@app.errorhandler(401)
+async def error401(error):
+    return {
+        "errors": [{"code": 401, "message": "You are not allowed to go to that URI"}]
+    }
+
+
+@app.errorhandler(404)
+async def error404(error):
+    return {"errors": [{"code": 404, "message": "Unable to find that URI"}]}
+
+
+@app.errorhandler(500)
+async def error500(error):
+    return {"errors": [{"code": 500, "message": "Something went wrong"}]}
+
+
 @app.route("/", methods=["GET"])
 async def index():
     return {"message": "Ok"}
@@ -54,7 +76,7 @@ async def status():
     result = db.command("serverStatus")
     if result:
         return {"message": "Ok", "info": {"api": "Ok", "database": "Ok"}}
-    
+
     return {"message": "Ok", "info": {"api": "Ok", "database": "Error"}}
 
 
@@ -115,9 +137,8 @@ async def delete_product():
         return {"errors": [{"message": "Unable to create product"}]}
 
 
-@app.route(
-    "/v1/user", methods=["GET", "POST"]
-)  # Had to define as POST as well due to Roblox
+# Roblox go brr and I cant use args for whatever stupid reason
+@app.route("/v1/user", methods=["GET", "POST"])
 async def get_user():
     try:
         info = await request.get_json()
@@ -138,7 +159,7 @@ async def verify_user():
         key = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
         verificationkeys[key] = info["userid"]
         return {"key": key}
-    
+
     return {"errors": [{"message": "User is already verified"}]}
 
 
