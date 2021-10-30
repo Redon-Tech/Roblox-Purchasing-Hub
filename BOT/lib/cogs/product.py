@@ -462,7 +462,7 @@ class Product(Cog):
         if userinfo:
             if product in userinfo["purchases"]:
                 embed = Embed(
-                    title="Thank's for your purchase!",
+                    title="Thanks for your purchase!",
                     description=f"Thank you for your purchase of {product} please get it by using the links below.",
                     colour=Colour.from_rgb(255, 255, 255),
                     timestamp=nextcord.utils.utcnow(),

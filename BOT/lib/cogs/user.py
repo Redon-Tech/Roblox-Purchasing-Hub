@@ -75,6 +75,25 @@ class User(Cog):
                 if data:
                     try:
                         giveproduct(data["_id"], product)
+
+                        try:
+                            embed = Embed(
+                                title="Thanks for your purchase!",
+                                description=f"Thank you for your purchase of {product} please get it by using the links below.",
+                                colour=Colour.from_rgb(255, 255, 255),
+                                timestamp=nextcord.utils.utcnow(),
+                            )
+                            if not member.dm_channel:
+                                await member.create_dm()
+
+                            await member.dm_channel.send(embed=embed)
+
+                            for attachment in getproduct(product)["attachments"]:
+                                await member.dm_channel.send(attachment)
+                        except:
+                            await ctx.send(
+                                f"I was unable to DM {member.mention} there product."
+                            )
                     except:
                         await ctx.send(
                             f"I was unable to give {member.mention} {product}."

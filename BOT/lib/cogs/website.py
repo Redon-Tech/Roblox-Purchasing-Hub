@@ -28,7 +28,7 @@ with open("./BOT/lib/bot/config.json") as config_file:
     config = json.load(config_file)
 roblox = Client()
 verificationkeys = {}
-
+sbot = None
 # Define Functions
 
 ## This needs to be done with the MongoDB database to make sure the _id is a string and not ObjectId
@@ -170,6 +170,24 @@ async def give_product():
     try:
         giveproduct(info["userid"], info["productname"])
         userinfo = getuser(info["userid"])
+        member = nextcord.utils.get(sbot.users, id=userinfo["discordid"])
+        if member != None:  # Try to prevent it from returning an error
+            product = getproduct(info["productname"])
+            productname = info["productname"]
+            if product != None:
+                embed = Embed(
+                    title="Thanks for your purchase!",
+                    description=f"Thank you for your purchase of **{productname}** please get it by using the links below.",
+                    colour=Colour.from_rgb(255, 255, 255),
+                    timestamp=nextcord.utils.utcnow(),
+                )
+
+                await member.send(embed=embed)
+
+                if product["attachments"] != None or product["attachments"] != []:
+                    for attachment in product["attachments"]:
+                        await member.send(attachment)
+
         return dumps(userinfo)
     except:
         return {"errors": [{"message": "Unable to give product"}]}
@@ -237,6 +255,8 @@ async def create_purchase():
 
 class Website(Cog):
     def __init__(self, bot):
+        global sbot
+        sbot = bot
         self.bot = bot
 
     @command(
