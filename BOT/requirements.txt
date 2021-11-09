@@ -1,6 +1,4 @@
 Quart==0.15.1
-discord.py==1.7.3
-discord==1.7.3
 nextcord
 pymongo==3.12.0
 pymongo[srv]

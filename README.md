@@ -52,7 +52,7 @@ If you have any suggestions join the Discord and let us know!
 | Status      | Name        | Description                                 |
 | ----------- | ----------- | ------------------------------------------- |
 | Not Started | Unlink      | Allow users to unlink and relink            |
-| Not Started | Transfer    | Allow users to transfer product whitelists  |
+| In Progress | Transfer    | Allow users to transfer product whitelists  |
 | Complete    | PPS         | Send products to users after purchase/given |
 | Complete    | QOL Changes | Quality Of Life Changes                     |
 

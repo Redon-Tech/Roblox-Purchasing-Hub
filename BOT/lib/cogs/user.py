@@ -4,10 +4,71 @@
 """
 import nextcord
 from nextcord.ext.commands import Cog, command, has_permissions, Greedy
-from nextcord import Embed, Colour, Member, colour
+from nextcord import (
+    Embed,
+    Colour,
+    Member,
+    colour,
+    ui,
+    Interaction,
+    SelectOption,
+    ButtonStyle,
+)
 from datetime import datetime
 from typing import Optional
 from ..utils.api import *
+
+
+class TransferSelect(ui.Select):
+    def __init__(self, user, context, whoto):
+        self.user = user
+        self.whoto = whoto
+        self.context = context
+        userinfo = getuserfromdiscord(self.user.id)
+        options = []
+
+        for product in userinfo["purchases"]:
+            options.append(SelectOption(product))
+
+        super().__init__(custom_id="user:transfer_select", options=options)
+
+    async def callback(self, interaction: Interaction):
+        message = await interaction.channel.send(
+            embed=Embed(
+                title="Transferring...",
+                description="Please wait while we transfer your product.",
+                colour=Colour.from_rgb(255, 255, 255),
+                timestamp=nextcord.utils.utcnow(),
+            )
+        )
+
+        try:
+            revokeproduct(self.user.id, str(interaction.data["values"])[2:-2])
+            giveproduct(self.whoto.id, str(interaction.data["values"])[2:-2])
+
+            await message.edit(
+                embed=Embed(
+                    title="Transfer Complete",
+                    description="Your product has been transferred to the selected account.",
+                    colour=Colour.from_rgb(0, 255, 0),
+                    timestamp=nextcord.utils.utcnow(),
+                )
+            )
+        except:
+            await message.edit(
+                embed=Embed(
+                    title="Transfer Failed",
+                    description="An error occured while transferring your product.",
+                    colour=Colour.from_rgb(255, 0, 0),
+                    timestamp=nextcord.utils.utcnow(),
+                )
+            )
+
+
+class TransferView(ui.View):
+    def __init__(self, context, whoto: Member):
+        super.__init__(timeout=None)
+        self.add_item(TransferSelect(context.author, context, whoto))
 
 
 class User(Cog):
@@ -51,6 +112,15 @@ class User(Cog):
                 f"I was unable to find any info on {member.display_name}.",
                 reference=ctx.message,
             )
+
+    @command(
+        name="transfer",
+        aliases=["transferproduct"],
+        brief="Transfer's a product to another user.",
+        catagory="user",
+    )
+    async def transfer(self, ctx, member: Member):
+        pass
 
     @command(
         name="giveproduct",
