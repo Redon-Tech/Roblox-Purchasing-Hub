@@ -17,6 +17,7 @@ from nextcord import (
 from datetime import datetime
 from typing import Optional
 from ..utils.api import *
+from ..utils.util import AreYouSureView
 
 
 class TransferSelect(ui.Select):
@@ -32,7 +33,7 @@ class TransferSelect(ui.Select):
 
         super().__init__(custom_id="user:transfer_select", options=options)
 
-    async def callback(self, interaction: Interaction):
+    async def callback(self, interaction: Interaction): # TODO: Add an are you sure view
         message = await interaction.channel.send(
             embed=Embed(
                 title="Transferring...",
