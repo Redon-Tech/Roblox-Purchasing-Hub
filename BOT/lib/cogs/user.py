@@ -29,49 +29,50 @@ class TransferSelect(ui.Select):
         options = []
 
         for product in userinfo["purchases"]:
-            options.append(SelectOption(product))
+            options.append(SelectOption(label=product))
 
         super().__init__(custom_id="user:transfer_select", options=options)
 
     async def callback(self, interaction: Interaction):
+        product = str(interaction.data["values"])[2:-2]
         view = AreYouSureView(self.context)
+        await interaction.message.delete()
         message = await interaction.channel.send(
             embed=Embed(
                 title="Are you sure?",
-                description=f"Are you sure you want to transfer this product to {self.whoto.mention}?",
+                description=f"Are you sure you want to transfer **{product}** to **{self.whoto.mention}**?",
                 colour=Colour.from_rgb(255, 0, 0),
-                timestamp=nextcord.utils.utcnow()
+                timestamp=nextcord.utils.utcnow(),
             ),
-            view=view
+            view=view,
         )
         await view.wait()
 
         if view.Return == None:
-            await message.delete()
-            await interaction.response.send_message("Timed out", ephemeral=True)
+            await message.edit("Timed Out", embed=None, view=None)
         elif view.Return == False:
-            await message.delete()
-            await interaction.response.send_message("Canceled transfer", ephemeral=True)
+            await message.edit("Canceled Transfer", embed=None, view=None)
         elif view.Return == True:
-            await message.delete()
-            message = await interaction.response.send_message(
+            await message.edit(
                 embed=Embed(
                     title="Transferring...",
-                    description="Please wait while we transfer your product.",
+                    description=f"Please wait while we transfer your **{product}**.",
                     colour=Colour.from_rgb(255, 255, 255),
                     timestamp=nextcord.utils.utcnow(),
                 ),
-                ephemeral=True
+                view=None,
             )
 
             try:
-                revokeproduct(self.user.id, str(interaction.data["values"])[2:-2])
-                giveproduct(self.whoto.id, str(interaction.data["values"])[2:-2])
+                interactor = getuserfromdiscord(self.user.id)
+                goingto = getuserfromdiscord(self.whoto.id)
+                revokeproduct(interactor["_id"], product)
+                giveproduct(goingto["_id"], product)
 
                 await message.edit(
                     embed=Embed(
                         title="Transfer Complete",
-                        description="Your product has been transferred to the selected account.",
+                        description=f"Your **{product}** has been transferred to the selected account.",
                         colour=Colour.from_rgb(0, 255, 0),
                         timestamp=nextcord.utils.utcnow(),
                     )
@@ -80,7 +81,7 @@ class TransferSelect(ui.Select):
                 await message.edit(
                     embed=Embed(
                         title="Transfer Failed",
-                        description="An error occured while transferring your product.",
+                        description=f"An error occured while transferring your **{product}**.",
                         colour=Colour.from_rgb(255, 0, 0),
                         timestamp=nextcord.utils.utcnow(),
                     )
@@ -89,7 +90,7 @@ class TransferSelect(ui.Select):
 
 class TransferView(ui.View):
     def __init__(self, context, whoto: Member):
-        super.__init__(timeout=None)
+        super().__init__(timeout=None)
         self.add_item(TransferSelect(context.author, context, whoto))
 
 
@@ -142,7 +143,15 @@ class User(Cog):
         catagory="user",
     )
     async def transfer(self, ctx, member: Member):
-        pass
+        await ctx.send(
+            embed=Embed(
+                title="Transfer Product",
+                description="Please select the product you want to transfer.",
+                colour=Colour.from_rgb(255, 255, 255),
+                timestamp=nextcord.utils.utcnow(),
+            ),
+            view=TransferView(ctx, member),
+        )
 
     @command(
         name="giveproduct",

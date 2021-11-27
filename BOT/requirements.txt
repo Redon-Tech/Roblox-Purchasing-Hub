@@ -5,3 +5,4 @@ pymongo[srv]
 nextcord-ext-menus
 ro.py
 bs4
+Werkzeug
