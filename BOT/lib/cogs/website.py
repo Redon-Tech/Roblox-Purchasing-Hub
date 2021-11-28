@@ -28,7 +28,7 @@ with open("./BOT/lib/bot/config.json") as config_file:
     config = json.load(config_file)
 roblox = Client()
 verificationkeys = {}
-
+sbot = None
 # Define Functions
 
 ## This needs to be done with the MongoDB database to make sure the _id is a string and not ObjectId
@@ -44,6 +44,28 @@ app.json_encoder = MyEncoder
 # Website Handling
 
 
+@app.errorhandler(400)
+async def error400(error):
+    return {"errors": [{"code": 400, "message": "Unable to read that request"}]}
+
+
+@app.errorhandler(401)
+async def error401(error):
+    return {
+        "errors": [{"code": 401, "message": "You are not allowed to go to that URI"}]
+    }
+
+
+@app.errorhandler(404)
+async def error404(error):
+    return {"errors": [{"code": 404, "message": "Unable to find that URI"}]}
+
+
+@app.errorhandler(500)
+async def error500(error):
+    return {"errors": [{"code": 500, "message": "Something went wrong"}]}
+
+
 @app.route("/", methods=["GET"])
 async def index():
     return {"message": "Ok"}
@@ -54,7 +76,7 @@ async def status():
     result = db.command("serverStatus")
     if result:
         return {"message": "Ok", "info": {"api": "Ok", "database": "Ok"}}
-    
+
     return {"message": "Ok", "info": {"api": "Ok", "database": "Error"}}
 
 
@@ -115,9 +137,8 @@ async def delete_product():
         return {"errors": [{"message": "Unable to create product"}]}
 
 
-@app.route(
-    "/v1/user", methods=["GET", "POST"]
-)  # Had to define as POST as well due to Roblox
+# Roblox go brr and I cant use args for whatever stupid reason
+@app.route("/v1/user", methods=["GET", "POST"])
 async def get_user():
     try:
         info = await request.get_json()
@@ -134,11 +155,11 @@ async def get_user():
 async def verify_user():
     info = await request.get_json()
     user = getuser(info["userid"])
-    if not user:
+    if not user or not user["discordid"]:
         key = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
         verificationkeys[key] = info["userid"]
         return {"key": key}
-    
+
     return {"errors": [{"message": "User is already verified"}]}
 
 
@@ -149,6 +170,24 @@ async def give_product():
     try:
         giveproduct(info["userid"], info["productname"])
         userinfo = getuser(info["userid"])
+        member = nextcord.utils.get(sbot.users, id=userinfo["discordid"])
+        if member != None:  # Try to prevent it from returning an error
+            product = getproduct(info["productname"])
+            productname = info["productname"]
+            if product != None:
+                embed = Embed(
+                    title="Thanks for your purchase!",
+                    description=f"Thank you for your purchase of **{productname}** please get it by using the links below.",
+                    colour=Colour.from_rgb(255, 255, 255),
+                    timestamp=nextcord.utils.utcnow(),
+                )
+
+                await member.send(embed=embed)
+
+                if product["attachments"] != None or product["attachments"] != []:
+                    for attachment in product["attachments"]:
+                        await member.send(attachment)
+
         return dumps(userinfo)
     except:
         return {"errors": [{"message": "Unable to give product"}]}
@@ -216,6 +255,8 @@ async def create_purchase():
 
 class Website(Cog):
     def __init__(self, bot):
+        global sbot
+        sbot = bot
         self.bot = bot
 
     @command(
@@ -228,7 +269,12 @@ class Website(Cog):
         if ctx.message.author.id in self.bot.owner_ids:
             await ctx.send("🟢 Website Online")
 
-    @command(name="verify", brief="Verify's you as a user.", catagory="user")
+    @command(
+        name="verify",
+        aliases=["link"],
+        brief="Verify's you as a user.",
+        catagory="user",
+    )
     async def verify(self, ctx, key):
         if key in verificationkeys:
             userid = verificationkeys[key]

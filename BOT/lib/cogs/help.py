@@ -222,7 +222,7 @@ class Help(Cog):
         )
         embed.add_field(name="Command Description", value=command.brief)
         embed.set_footer(text="Pembroke Bot • By: parker02311")
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, reference=ctx.message)
 
     @command(name="help", brief="Shows this message", catagory="misc")
     async def show_help(self, ctx, cmd: Optional[str]):

@@ -49,10 +49,12 @@ If you have any suggestions join the Discord and let us know!
 ## TD
 
 ### V1.1
-| Status   | Name              | Description                                                                      |
-| -------- | ----------------- | -------------------------------------------------------------------------------- |
-| Not Started | Unlink | Allow users to unlink and relink |
-| Not Started | Transfer | Allow users to transfer product whitelists |
+| Status   | Name        | Description                                 |
+| -------- | ----------- | ------------------------------------------- |
+| Complete | Unlink      | Allow users to unlink and relink            |
+| Complete | Transfer    | Allow users to transfer product whitelists  |
+| Complete | PPS         | Send products to users after purchase/given |
+| Complete | QOL Changes | Quality Of Life Changes                     |
 
 ### V1.0
 
@@ -63,3 +65,10 @@ If you have any suggestions join the Discord and let us know!
 | Complete | Bot Commands      | Commands to create, delete, update product and verify, give products, and revoke |
 | Complete | Create hub GUI    | A simple UI that does not need to be advanced.                                   |
 | Complete | Developer Product | A system that creates developer products automatically to make a cart system.    |
+
+### Version TBD
+| Status      | Name           | Description                                              | Reason TBD                                     |
+| ----------- | -------------- | -------------------------------------------------------- | ---------------------------------------------- |
+| Not Started | Slash Commands | Convert all commands to slash commands (Optional?)       | Waiting on nextcord support for slash commands |
+| Not Started | Whitelisting   | Allow users to purchase a single wl for use in one place | Im lazy                                        |
+| Not Started | Env            | Convert some variables to ENV variables for security     | Im lazy                                        |
