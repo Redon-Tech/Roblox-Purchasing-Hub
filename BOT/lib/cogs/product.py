@@ -34,65 +34,6 @@ class CancelView(ui.View):
         self.stop()
 
 
-# Are you sure?
-# class AreYouSureView(ui.View):
-#     def __init__(self, context):
-#         super().__init__(timeout=None)
-#        # self.Action = Action
-#        # self.args = args
-#         self.context = context
-#         self.Return = None
-
-#     @ui.button(
-#         label="Yes", custom_id="products:yes_I_am_sure", style=ButtonStyle.success
-#     )
-#     async def iamsure(self, _, interaction: Interaction):
-#         self.Return = True
-#         # if self.Action == "deleteproduct":
-#         #     try:
-#         #         deleteproduct(self.args[0])
-#         #         await interaction.message.delete()
-#         #         await interaction.response.send_message(
-#         #             f"Deleted {self.args[0]}.",
-#         #             ephemeral=True,
-#         #         )
-#         #         self.stop()
-#         #     except:
-#         #         await interaction.message.delete()
-#         #         await interaction.response.send_message(
-#         #             f"Failed to delete {self.args[0]}.",
-#         #             ephemeral=True,
-#         #         )
-#         #         self.stop()
-#         # if self.Action == "updateproduct":
-#         #     try:
-#         #         updateproduct(
-#         #             self.args[0], self.args[1], self.args[2], self.args[3], self.args[4]
-#         #         )
-#         #         await interaction.message.delete()
-#         #         await interaction.response.send_message(
-#         #             f"Updated {self.args[0]}.",
-#         #             ephemeral=True,
-#         #         )
-#         #         self.stop()
-#         #     except:
-#         #         await interaction.message.delete()
-#         #         await interaction.response.send_message(
-#         #             f"Failed to update {self.args[0]}.",
-#         #             ephemeral=True,
-#         #         )
-#         self.stop()
-
-#     @ui.button(
-#         label="No", custom_id="products:no_I_am_not_sure", style=ButtonStyle.danger
-#     )
-#     async def noiamnotsure(self, _, interaction: Interaction):
-#         self.Return = False
-#         # await interaction.message.delete()
-#         # await interaction.response.send_message("Canceled action.", ephemeral=True)
-#         self.stop()
-
-
 # Delete view
 class DeleteView(ui.View):
     def __init__(self, context):
@@ -113,34 +54,11 @@ class DeleteView(ui.View):
 
         product = str(interaction.data["values"])[2:-2]
         await interaction.message.delete()
-        view = AreYouSureView(self.context)
-        message = await interaction.channel.send(
+        await interaction.channel.send(
             f"Are you sure you would like to delete {product}?",
-            view=view,
+            view=AreYouSureView(self.context, "deleteproduct", product),
             reference=self.context.message,
         )
-        await view.wait()
-
-        if view.Return == None:
-            await message.delete()
-            await interaction.response.send_message("Timed out.", ephemeral=True)
-        elif view.Return == False:
-            await message.delete()
-            await interaction.response.send_message("Canceled deletion.", ephemeral=True)
-        elif view.Return == True:
-            try:
-                deleteproduct(product)
-                await message.delete()
-                await interaction.response.send_message(
-                    f"Deleted {product}.",
-                    ephemeral=True,
-                )
-            except:
-                await message.delete()
-                await interaction.response.send_message(
-                    f"Failed to delete {product}.",
-                    ephemeral=True,
-                )
 
 
 # Update View's
