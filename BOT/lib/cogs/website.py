@@ -155,7 +155,7 @@ async def get_user():
 async def verify_user():
     info = await request.get_json()
     user = getuser(info["userid"])
-    if not user:
+    if not user or not user["discordid"]:
         key = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
         verificationkeys[key] = info["userid"]
         return {"key": key}
@@ -269,7 +269,12 @@ class Website(Cog):
         if ctx.message.author.id in self.bot.owner_ids:
             await ctx.send("🟢 Website Online")
 
-    @command(name="verify", brief="Verify's you as a user.", catagory="user")
+    @command(
+        name="verify",
+        aliases=["link"],
+        brief="Verify's you as a user.",
+        catagory="user",
+    )
     async def verify(self, ctx, key):
         if key in verificationkeys:
             userid = verificationkeys[key]

@@ -54,10 +54,22 @@ def getuserfromdiscord(discordid):
 
 
 def verifyuser(userid, discordid, username):
-    return insert(
-        "users",
-        {"_id": userid, "discordid": discordid, "username": username, "purchases": []},
-    )
+    if getuser(userid) is None:
+        return insert(
+            "users",
+            {
+                "_id": userid,
+                "discordid": discordid,
+                "username": username,
+                "purchases": [],
+            },
+        )
+
+    return update("users", {"_id": userid}, {"$set": {"discordid": discordid}})
+
+
+def unlinkuser(userid):
+    return update("users", {"_id": userid}, {"$set": {"discordid": None}})
 
 
 def giveproduct(userid, productname):

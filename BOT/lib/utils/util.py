@@ -5,6 +5,8 @@
 
 from quart import request
 from nextcord import ui, Interaction, SelectOption, ButtonStyle
+from nextcord.ext import commands
+from .api import getuserfromdiscord
 import json
 import functools
 
@@ -33,6 +35,7 @@ class AreYouSureView(ui.View):
         self.Return = False
         self.stop()
 
+
 def require_apikey(view):
     # Makes it so I dont repeat if apikey in every website base.
     @functools.wraps(view)
@@ -43,3 +46,20 @@ def require_apikey(view):
         return await view(*args, **kwargs)
 
     return wrapper
+
+
+def RequiresVerification():
+    def predicate(ctx):
+        if getuserfromdiscord(ctx.author.id) is None:
+            raise UserNotVerified
+
+        return True
+
+    return commands.check(predicate)
+
+
+class UserNotVerified(commands.errors.CheckFailure):
+    pass
+
+class UserOwnsProduct(Exception):
+    pass

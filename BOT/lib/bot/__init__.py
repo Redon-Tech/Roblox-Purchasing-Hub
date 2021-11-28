@@ -16,6 +16,7 @@ from nextcord.ext.commands import (
 )
 from nextcord.errors import HTTPException, Forbidden
 from nextcord import Intents, DMChannel
+from ..utils.util import UserNotVerified
 import json
 import os
 
@@ -101,25 +102,35 @@ class Bot(BotBase):
 
         elif isinstance(exc, BadArgument):
             await ctx.send(
-                f"You inputed an invalid argument, use {self.PREFIX}help to see all the required arguments."
+                f"You inputed an invalid argument, use {self.PREFIX}help to see all the required arguments.",
+                reference=ctx.message,
             )
 
         elif isinstance(exc, MissingRequiredArgument):
             await ctx.send(
-                f"You left out a vital argument, use {self.PREFIX}help to see all the required arguments."
+                f"You left out a vital argument, use {self.PREFIX}help to see all the required arguments.",
+                reference=ctx.message,
             )
 
         elif isinstance(exc, CommandOnCooldown):
             await ctx.send(
-                f"This command is on cooldown for {exc.retry_after:,.2f} more seconds."
+                f"This command is on cooldown for {exc.retry_after:,.2f} more seconds.",
+                reference=ctx.message,
             )
 
         elif isinstance(exc, HTTPException):
-            await ctx.send("I was unable to send the message.")
+            await ctx.send("I was unable to send the message.", reference=ctx.message)
+
+        elif isinstance(exc, UserNotVerified):
+            await ctx.send(
+                "Only verified users can use this command.", reference=ctx.message
+            )
 
         elif hasattr(exc, "original"):
             if isinstance(exc.original, Forbidden):
-                await ctx.send("I do not have permission to do that.")
+                await ctx.send(
+                    "I do not have permission to do that.", reference=ctx.message
+                )
 
             else:
                 raise exc.original
