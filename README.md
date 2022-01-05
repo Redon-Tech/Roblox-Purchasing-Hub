@@ -69,6 +69,6 @@ If you have any suggestions join the Discord and let us know!
 ### Version TBD
 | Status      | Name           | Description                                              | Reason TBD                                     |
 | ----------- | -------------- | -------------------------------------------------------- | ---------------------------------------------- |
-| Not Started | Slash Commands | Convert all commands to slash commands (Optional?)       | Waiting on nextcord support for slash commands |
-| Not Started | Whitelisting   | Allow users to purchase a single wl for use in one place | Im lazy                                        |
-| Not Started | Env            | Convert some variables to ENV variables for security     | Im lazy                                        |
+| Not Started | Slash Commands | Convert all commands to slash commands (Optional?)       | Im lazy |
+| Not Started | Whitelisting   | Allow users to purchase a single wl for use in one place | Im lazy |
+| Not Started | Env            | Convert some variables to ENV variables for security     | Im lazy |
