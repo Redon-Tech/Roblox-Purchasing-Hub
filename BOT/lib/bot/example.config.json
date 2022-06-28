@@ -8,7 +8,13 @@
     "standardoutput": 123467890,
     "usepages": true,
     "mongodb": {
-        "url": "mongodburl"
+        "type": "mongodb",
+        "sqlalchemy": {
+            "url": "Your sqlalchemy connection string"
+        },
+        "mongodb": {
+            "url": "Your mongodb connection string"
+        }
     },
     "roblox": {
         "cookie": "fullrobloxcookie"

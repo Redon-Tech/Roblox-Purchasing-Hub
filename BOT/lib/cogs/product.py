@@ -54,11 +54,34 @@ class DeleteView(ui.View):
 
         product = str(interaction.data["values"])[2:-2]
         await interaction.message.delete()
-        await interaction.channel.send(
+        view = AreYouSureView(self.context)
+        message = await interaction.channel.send(
             f"Are you sure you would like to delete {product}?",
-            view=AreYouSureView(self.context, "deleteproduct", product),
+            view=view,
             reference=self.context.message,
         )
+        await view.wait()
+
+        if view.Return == None:
+            await message.delete()
+            await interaction.response.send_message("Timed Out", ephemeral=True)
+        elif view.Return == False:
+            await message.delete()
+            await interaction.response.send_message("Canceled Delete", ephemeral=True)
+        elif view.Return == True:
+            try:
+                deleteproduct(product)
+                await message.delete()
+                await interaction.response.send_message(
+                    f"Deleted {product}.",
+                    ephemeral=True,
+                )
+            except:
+                await message.delete()
+                await interaction.response.send_message(
+                    f"Failed to delete {product}.",
+                    ephemeral=True,
+                )
 
 
 # Update View's
@@ -117,11 +140,17 @@ class WhatUpdateView(ui.View):
                     await interaction.response.send_message("Timed out", ephemeral=True)
                 elif view.Return == False:
                     await message.delete()
-                    await interaction.response.send_message("Canceled update", ephemeral=True)
+                    await interaction.response.send_message(
+                        "Canceled update", ephemeral=True
+                    )
                 elif view.Return == True:
                     try:
                         updateproduct(
-                            self.product["name"], message.content, self.product["description"], self.product["price"], self.product["attachments"]
+                            self.product["name"],
+                            message.content,
+                            self.product["description"],
+                            self.product["price"],
+                            self.product["attachments"],
                         )
                         await interaction.message.delete()
                         name = self.product["name"]
@@ -184,11 +213,17 @@ class WhatUpdateView(ui.View):
                     await interaction.response.send_message("Timed out", ephemeral=True)
                 elif view.Return == False:
                     await message.delete()
-                    await interaction.response.send_message("Canceled update", ephemeral=True)
+                    await interaction.response.send_message(
+                        "Canceled update", ephemeral=True
+                    )
                 elif view.Return == True:
                     try:
                         updateproduct(
-                            self.product["name"], self.product["name"], message.content, self.product["price"], self.product["attachments"]
+                            self.product["name"],
+                            self.product["name"],
+                            message.content,
+                            self.product["price"],
+                            self.product["attachments"],
                         )
                         await interaction.message.delete()
                         name = self.product["name"]
@@ -249,11 +284,17 @@ class WhatUpdateView(ui.View):
                     await interaction.response.send_message("Timed out", ephemeral=True)
                 elif view.Return == False:
                     await message.delete()
-                    await interaction.response.send_message("Canceled update", ephemeral=True)
+                    await interaction.response.send_message(
+                        "Canceled update", ephemeral=True
+                    )
                 elif view.Return == True:
                     try:
                         updateproduct(
-                            self.product["name"], self.product["name"], self.product["description"], int(message.content), self.product["attachments"]
+                            self.product["name"],
+                            self.product["name"],
+                            self.product["description"],
+                            int(message.content),
+                            self.product["attachments"],
                         )
                         await interaction.message.delete()
                         name = self.product["name"]
@@ -368,11 +409,17 @@ class WhatUpdateView(ui.View):
                 await interaction.response.send_message("Timed out", ephemeral=True)
             elif view.Return == False:
                 await message.delete()
-                await interaction.response.send_message("Canceled update", ephemeral=True)
+                await interaction.response.send_message(
+                    "Canceled update", ephemeral=True
+                )
             elif view.Return == True:
                 try:
                     updateproduct(
-                        self.product["name"], self.product["name"], self.product["description"], self.product["price"], attachments
+                        self.product["name"],
+                        self.product["name"],
+                        self.product["description"],
+                        self.product["price"],
+                        attachments,
                     )
                     await interaction.message.delete()
                     name = self.product["name"]
@@ -666,7 +713,7 @@ class Product(Cog):
             ("Price", awnsers[2], False),
             (
                 "Attachments",
-                "\n".join([attachment for attachment in attachments]),
+                "\n".join([attachment for attachment in attachments]) or "None",
                 False,
             ),
         ]
@@ -710,7 +757,7 @@ class Product(Cog):
                 ("Price", awnsers[2], False),
                 (
                     "Attachments",
-                    "\n".join([attachment for attachment in attachments]),
+                    "\n".join([attachment for attachment in attachments]) or "None",
                     False,
                 ),
             ]
