@@ -62,6 +62,8 @@ if config["database"]["type"].lower() == "sqlalchemy":
     def get_filter_by_args(model_class, dic_args: dict):
         filters = []
         for key, value in dic_args.items():  # type: str, any
+            if key == "_id":
+                key = "id"
             if key.endswith("___min"):
                 key = key[:-6]
                 filters.append(getattr(model_class, key) > value)
