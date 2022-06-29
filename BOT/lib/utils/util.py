@@ -41,7 +41,7 @@ def require_apikey(view):
     @functools.wraps(view)
     async def wrapper(*args, **kwargs):
         apikey = request.headers["apikey"]
-        if not apikey == config["apikey"]:
+        if not apikey == config["api"]["key"]:
             return {"errors": [{"message": "Improper API key passed"}]}
         return await view(*args, **kwargs)
 
@@ -60,6 +60,7 @@ def RequiresVerification():
 
 class UserNotVerified(commands.errors.CheckFailure):
     pass
+
 
 class UserOwnsProduct(Exception):
     pass

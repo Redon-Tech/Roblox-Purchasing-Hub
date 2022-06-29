@@ -307,6 +307,6 @@ class Website(Cog):
 
 def setup(bot):
     bot.loop.create_task(
-        app.run_task("0.0.0.0")
+        app.run_task(config["api"]["ip"], port=config["api"]["port"])
     )  # It is highly recomended that you change "0.0.0.0" to your server IP in a production env
     bot.add_cog(Website(bot))
