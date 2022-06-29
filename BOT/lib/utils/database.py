@@ -13,10 +13,20 @@ with open("./BOT/lib/bot/config.json") as config_file:
     config = json.load(config_file)
 
 if config["database"]["type"].lower() == "sqlalchemy":
-    from sqlalchemy import create_engine, Column, Integer, String, Table
+    from sqlalchemy import create_engine, Column, Integer, String
+    from sqlalchemy.engine import URL
     from sqlalchemy.orm import declarative_base, sessionmaker
+    from urllib.parse import quote_plus
 
-    engine = create_engine(config["database"]["sqlalchemy"]["url"])
+    connection_url = URL.create(
+        drivername=config["database"]["sqlalchemy"]["connector"],
+        username=config["database"]["sqlalchemy"]["username"],
+        password=quote_plus(config["database"]["sqlalchemy"]["password"]),
+        host=config["database"]["sqlalchemy"]["host"],
+        database=config["database"]["sqlalchemy"]["database"],
+    )
+
+    engine = create_engine(connection_url)
 
     Base = declarative_base()
 
@@ -24,10 +34,10 @@ if config["database"]["type"].lower() == "sqlalchemy":
         __tablename__ = "products"
 
         id = Column(Integer, primary_key=True)
-        name = Column(String(50), Unique=True, nullable=False)
+        name = Column(String(50), nullable=False)
         description = Column(String(255), nullable=False)
         price = Column(Integer, nullable=False)
-        attachments = Column(Table)
+        attachments = Column(String)
 
         def __repr__(self) -> str:
             return f"Product(id={self.id}, name={self.name}, description={self.description}, price={self.price}, attachments={self.attachments})"
@@ -38,7 +48,7 @@ if config["database"]["type"].lower() == "sqlalchemy":
         id = Column(Integer, primary_key=True)
         discordid = Column(Integer, nullable=False)
         username = Column(String(20), nullable=False)
-        purchases = Column(Table)
+        purchases = Column(String)
 
         def __repr__(self) -> str:
             return f"User(id={self.id}, discordid={self.discordid}, username={self.username}, purchases={self.purchases})"
@@ -69,16 +79,18 @@ if config["database"]["type"].lower() == "sqlalchemy":
 
     def insert(data, info):
         if data == "products":
+            attachments = json.dumps(info["attachments"])
             product = Product(
                 name=info["name"],
                 description=info["description"],
                 price=info["price"],
-                attachments=info["attachments"],
+                attachments=attachments,
             )
             db.add(product)
             db.commit()
             return product
         elif data == "users":
+            purchases = json.dumps(info["purchases"])
             user = User(
                 id=info["_id"],
                 discordid=info["discordid"],
@@ -107,18 +119,30 @@ if config["database"]["type"].lower() == "sqlalchemy":
     def find(data, query):
         if data == "products":
             filters = get_filter_by_args(Product, query)
-            return db.query(Product).filter(*filters)
+            data = db.query(Product).filter(*filters).all()
+            sent = json.loads(data)
+            print(sent, data, filters)
+            return sent
         elif data == "users":
             filters = get_filter_by_args(User, query)
-            return db.query(User).filter(*filters)
+            data = db.query(User).filter(*filters).all()
+            sent = json.loads(data)
+            print(sent, data, filters)
+            return sent
 
     def find_one(data, query):
         if data == "products":
             filters = get_filter_by_args(Product, query)
-            return db.query(Product).filter(*filters).first()
+            data = db.query(Product).filter(*filters).first()
+            sent = json.loads(data)
+            print(sent, data, filters)
+            return sent
         elif data == "users":
             filters = get_filter_by_args(User, query)
-            return db.query(User).filter(*filters).first()
+            data = db.query(User).filter(*filters).first()
+            sent = json.loads(data)
+            print(sent, data, filters)
+            return sent
 
 
 if config["database"]["type"].lower() == "mongodb":
