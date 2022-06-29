@@ -3,6 +3,7 @@ nextcord
 pymongo==3.12.0
 pymongo[srv]
 sqlalchemy==1.4.39
+mysql-connector-python==8.0.29
 mariadb==1.1.2
 nextcord-ext-menus
 ro.py
