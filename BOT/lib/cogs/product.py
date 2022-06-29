@@ -117,31 +117,40 @@ class WhatUpdateView(ui.View):
             message = await self.bot.wait_for("message", timeout=600.0, check=check)
         except TimeoutError:
             await interaction.message.delete()
-            await interaction.response.send_message("Timed Out", ephemeral=True)
+            await self.context.send(
+                "Timed Out", reference=self.context.message, delete_after=5.0
+            )
             self.stop()
 
         if not message is None and view.canceled is False:
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
-                await interaction.response.send_message("Canceled", ephemeral=True)
+                await self.context.send(
+                    "Canceled", reference=self.context.message, delete_after=5.0
+                )
                 self.stop()
             else:
                 await interaction.message.delete()
                 view = AreYouSureView(self.context)
-                message = await self.context.send(
-                    f"Are you sure you would like to change {self.product['name']} to {message.content}?",
+                are_u_sure_message = await self.context.send(
+                    f"Are you sure you would like to change `{self.product['name']}` to `{message.content}`?",
                     view=view,
                     reference=self.context.message,
                 )
                 await view.wait()
+                await are_u_sure_message.delete()
 
                 if view.Return == None:
                     await message.delete()
-                    await interaction.response.send_message("Timed out", ephemeral=True)
+                    await self.context.send(
+                        "Timed out", reference=self.context.message, delete_after=5.0
+                    )
                 elif view.Return == False:
                     await message.delete()
-                    await interaction.response.send_message(
-                        "Canceled update", ephemeral=True
+                    await self.context.send(
+                        "Canceled update",
+                        reference=self.context.message,
+                        delete_after=5.0,
                     )
                 elif view.Return == True:
                     try:
@@ -152,17 +161,19 @@ class WhatUpdateView(ui.View):
                             self.product["price"],
                             self.product["attachments"],
                         )
-                        await interaction.message.delete()
+                        await message.delete()
                         name = self.product["name"]
-                        await interaction.response.send_message(
+                        await self.context.send(
                             f"Updated {name}.",
-                            ephemeral=True,
+                            reference=self.context.message,
+                            delete_after=5.0,
                         )
                     except:
-                        await interaction.message.delete()
-                        await interaction.response.send_message(
+                        await message.delete()
+                        await self.context.send(
                             f"Failed to update {self.args[0]}.",
-                            ephemeral=True,
+                            reference=self.context.message,
+                            delete_after=5.0,
                         )
 
     @ui.button(
@@ -190,31 +201,40 @@ class WhatUpdateView(ui.View):
             message = await self.bot.wait_for("message", timeout=600.0, check=check)
         except TimeoutError:
             await interaction.message.delete()
-            await interaction.response.send_message("Timed Out", ephemeral=True)
+            await self.context.send(
+                "Timed Out", reference=self.context.message, delete_after=5.0
+            )
             self.stop()
 
         if not message is None and view.canceled is False:
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
-                await interaction.response.send_message("Canceled", ephemeral=True)
+                await self.context.send(
+                    "Canceled", reference=self.context.message, delete_after=5.0
+                )
                 self.stop()
             else:
                 await interaction.message.delete()
                 view = AreYouSureView(self.context)
-                await self.context.send(
-                    f"Are you sure you would like to change {self.product['description']} to {message.content}?",
+                are_u_sure_message = await self.context.send(
+                    f"Are you sure you would like to change `{self.product['description']}` to `{message.content}`?",
                     view=view,
                     reference=self.context.message,
                 )
                 await view.wait()
+                await are_u_sure_message.delete()
 
                 if view.Return == None:
                     await message.delete()
-                    await interaction.response.send_message("Timed out", ephemeral=True)
+                    await self.context.send(
+                        "Timed out", reference=self.context.message, delete_after=5.0
+                    )
                 elif view.Return == False:
                     await message.delete()
-                    await interaction.response.send_message(
-                        "Canceled update", ephemeral=True
+                    await self.context.send(
+                        "Canceled update",
+                        reference=self.context.message,
+                        delete_after=5.0,
                     )
                 elif view.Return == True:
                     try:
@@ -225,17 +245,19 @@ class WhatUpdateView(ui.View):
                             self.product["price"],
                             self.product["attachments"],
                         )
-                        await interaction.message.delete()
+                        await message.delete()
                         name = self.product["name"]
-                        await interaction.response.send_message(
+                        await self.context.send(
                             f"Updated {name}.",
-                            ephemeral=True,
+                            reference=self.context.message,
+                            delete_after=5.0,
                         )
                     except:
-                        await interaction.message.delete()
-                        await interaction.response.send_message(
+                        await message.delete()
+                        await self.context.send(
                             f"Failed to update {self.args[0]}.",
-                            ephemeral=True,
+                            reference=self.context.message,
+                            delete_after=5.0,
                         )
 
     @ui.button(
@@ -261,31 +283,40 @@ class WhatUpdateView(ui.View):
             message = await self.bot.wait_for("message", timeout=600.0, check=check)
         except TimeoutError:
             await interaction.message.delete()
-            await interaction.response.send_message("Timed Out", ephemeral=True)
+            await self.context.send(
+                "Timed Out", reference=self.context.message, delete_after=5.0
+            )
             self.stop()
 
         if not message is None and view.canceled is False:
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
-                await interaction.response.send_message("Canceled", ephemeral=True)
+                await self.context.send(
+                    "Canceled", reference=self.context.message, delete_after=5.0
+                )
                 self.stop()
             else:
                 await interaction.message.delete()
                 view = AreYouSureView(self.context)
-                await self.context.send(
-                    f"Are you sure you would like to change {self.product['price']} to {int(message.content)}?",
+                are_u_sure_message = await self.context.send(
+                    f"Are you sure you would like to change `{self.product['price']}` to `{int(message.content)}`?",
                     view=view,
                     reference=self.context.message,
                 )
                 await view.wait()
+                await are_u_sure_message.delete()
 
                 if view.Return == None:
                     await message.delete()
-                    await interaction.response.send_message("Timed out", ephemeral=True)
+                    await self.context.send(
+                        "Timed out", reference=self.context.message, delete_after=5.0
+                    )
                 elif view.Return == False:
                     await message.delete()
-                    await interaction.response.send_message(
-                        "Canceled update", ephemeral=True
+                    await self.context.send(
+                        "Canceled update",
+                        reference=self.context.message,
+                        delete_after=5.0,
                     )
                 elif view.Return == True:
                     try:
@@ -296,17 +327,19 @@ class WhatUpdateView(ui.View):
                             int(message.content),
                             self.product["attachments"],
                         )
-                        await interaction.message.delete()
+                        await message.delete()
                         name = self.product["name"]
-                        await interaction.response.send_message(
+                        await self.context.send(
                             f"Updated {name}.",
-                            ephemeral=True,
+                            reference=self.context.message,
+                            delete_after=5.0,
                         )
                     except:
-                        await interaction.message.delete()
-                        await interaction.response.send_message(
+                        await message.delete()
+                        await self.context.send(
                             f"Failed to update {self.args[0]}.",
-                            ephemeral=True,
+                            reference=self.context.message,
+                            delete_after=5.0,
                         )
 
     @ui.button(
@@ -350,7 +383,9 @@ class WhatUpdateView(ui.View):
                 message = await self.bot.wait_for("message", timeout=600.0, check=check)
             except TimeoutError:
                 await interaction.message.delete()
-                await interaction.response.send_message("Timed Out", ephemeral=True)
+                await self.context.send(
+                    "Timed Out", reference=self.context.message, delete_after=5.0
+                )
                 self.stop()
 
             if message.content.lower() == "cancel":
@@ -397,20 +432,23 @@ class WhatUpdateView(ui.View):
         if attachments:
             await interaction.message.delete()
             view = AreYouSureView(self.context)
-            await self.context.send(
-                f"Are you sure you would like to change {self.product['attachments']} to {attachments}?",
+            are_u_sure_message = await self.context.send(
+                f"Are you sure you would like to change `{self.product['attachments']}` to `{attachments}`?",
                 view=view,
                 reference=self.context.message,
             )
             await view.wait()
+            await are_u_sure_message.delete()
 
             if view.Return == None:
                 await message.delete()
-                await interaction.response.send_message("Timed out", ephemeral=True)
+                await self.context.send(
+                    "Timed out", reference=self.context.message, delete_after=5.0
+                )
             elif view.Return == False:
                 await message.delete()
-                await interaction.response.send_message(
-                    "Canceled update", ephemeral=True
+                await self.context.send(
+                    "Canceled update", reference=self.context.message, delete_after=5.0
                 )
             elif view.Return == True:
                 try:
@@ -421,17 +459,19 @@ class WhatUpdateView(ui.View):
                         self.product["price"],
                         attachments,
                     )
-                    await interaction.message.delete()
+                    await message.delete()
                     name = self.product["name"]
-                    await interaction.response.send_message(
+                    await self.context.send(
                         f"Updated {name}.",
-                        ephemeral=True,
+                        reference=self.context.message,
+                        delete_after=5.0,
                     )
                 except:
-                    await interaction.message.delete()
-                    await interaction.response.send_message(
+                    await message.delete()
+                    await self.context.send(
                         f"Failed to update {self.args[0]}.",
-                        ephemeral=True,
+                        reference=self.context.message,
+                        delete_after=5.0,
                     )
 
     @ui.button(
@@ -439,7 +479,9 @@ class WhatUpdateView(ui.View):
     )
     async def update_cancel(self, _, interaction: Interaction):
         await interaction.message.delete()
-        await interaction.response.send_message("Canceled", ephemeral=True)
+        await self.context.send(
+            "Canceled", reference=self.context.message, delete_after=5.0
+        )
         self.stop()
 
 

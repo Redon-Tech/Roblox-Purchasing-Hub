@@ -23,6 +23,7 @@ if config["database"]["type"].lower() == "sqlalchemy":
         username=config["database"]["sqlalchemy"]["username"],
         password=quote_plus(config["database"]["sqlalchemy"]["password"]),
         host=config["database"]["sqlalchemy"]["host"],
+        port=config["database"]["sqlalchemy"]["port"],
         database=config["database"]["sqlalchemy"]["database"],
     )
 
@@ -37,7 +38,7 @@ if config["database"]["type"].lower() == "sqlalchemy":
         name = Column(String(50), nullable=False)
         description = Column(String(255), nullable=False)
         price = Column(Integer, nullable=False)
-        attachments = Column(String)
+        attachments = Column(String(10000))
 
         def __repr__(self) -> str:
             return f"Product(id={self.id}, name={self.name}, description={self.description}, price={self.price}, attachments={self.attachments})"
@@ -48,7 +49,7 @@ if config["database"]["type"].lower() == "sqlalchemy":
         id = Column(Integer, primary_key=True)
         discordid = Column(Integer, nullable=False)
         username = Column(String(20), nullable=False)
-        purchases = Column(String)
+        purchases = Column(String(10000))
 
         def __repr__(self) -> str:
             return f"User(id={self.id}, discordid={self.discordid}, username={self.username}, purchases={self.purchases})"
@@ -88,61 +89,180 @@ if config["database"]["type"].lower() == "sqlalchemy":
             )
             db.add(product)
             db.commit()
-            return product
+            return info
         elif data == "users":
             purchases = json.dumps(info["purchases"])
             user = User(
                 id=info["_id"],
                 discordid=info["discordid"],
                 username=info["username"],
-                purchases=info["purchases"],
+                purchases=purchases,
             )
             db.add(user)
             db.commit()
-            return user
+            return info
 
     def insertmany(data, info):
-        pass
+        if data == "products":
+            additions = []
+            for product in info:
+                attachments = json.dumps(product["attachments"])
+                product = Product(
+                    name=product["name"],
+                    description=product["description"],
+                    price=product["price"],
+                    attachments=attachments,
+                )
+                additions.append(product)
+
+            db.add_all(additions)
+            db.commit()
+            return info
+        elif data == "users":
+            additions = []
+            for user in info:
+                purchases = json.dumps(user["purchases"])
+                user = User(
+                    id=user["_id"],
+                    discordid=user["discordid"],
+                    username=user["username"],
+                    purchases=purchases,
+                )
+                additions.append(user)
+
+            db.add_all(additions)
+            db.commit()
+            return info
 
     def update(data, query, info):
-        pass
+        filters = get_filter_by_args(Product, query)
+        if data == "products":
+            product = db.query(Product).filter(*filters).first()
+            new_info = info["$set"]
+            product.name = new_info["name"]
+            product.description = new_info["description"]
+            product.price = new_info["price"]
+            product.attachments = json.dumps(new_info["attachments"])
+            db.commit()
+            return info
+        elif data == "users":
+            user = db.query(User).filter(*filters).first()
+            new_info = info["$set"]
+            if new_info["discordid"]:
+                user.discordid = new_info["discordid"]
+            elif new_info["purchases"]:
+                user.username = new_info["purchases"]
+            db.commit()
+            return info
 
     def updatemany(data, query, info):
-        pass
+        filters = get_filter_by_args(Product, query)
+        if data == "products":
+            for product in info:
+                product = db.query(Product).filter(*filters).first()
+                new_info = product["$set"]
+                product.name = new_info["name"]
+                product.description = new_info["description"]
+                product.price = new_info["price"]
+                product.attachments = json.dumps(new_info["attachments"])
+
+            db.commit()
+            return info
+        elif data == "users":
+            for user in info:
+                user = db.query(User).filter(*filters).first()
+                new_info = user["$set"]
+                if new_info["discordid"]:
+                    user.discordid = new_info["discordid"]
+                elif new_info["purchases"]:
+                    user.username = new_info["purchases"]
+
+            db.commit()
+            return info
 
     def delete(data, query):
-        pass
+        if data == "products":
+            filters = get_filter_by_args(Product, query)
+            product = db.query(Product).filter(*filters).first()
+            db.delete(product)
+            db.commit()
+            return True
+        elif data == "users":
+            filters = get_filter_by_args(User, query)
+            user = db.query(User).filter(*filters).first()
+            db.delete(user)
+            db.commit()
+            return True
 
     def deletemany(data, query):
-        pass
+        if data == "products":
+            filters = get_filter_by_args(Product, query)
+            products = db.query(Product).filter(*filters).all()
+            for product in products:
+                db.delete(product)
+            db.commit()
+            return True
+        elif data == "users":
+            filters = get_filter_by_args(User, query)
+            users = db.query(User).filter(*filters).all()
+            for user in users:
+                db.delete(user)
+            db.commit()
+            return True
 
     def find(data, query):
         if data == "products":
             filters = get_filter_by_args(Product, query)
             data = db.query(Product).filter(*filters).all()
-            sent = json.loads(data)
-            print(sent, data, filters)
-            return sent
+            send = []
+            for data in data:
+                new_data = {
+                    "_id": data.id,
+                    "name": data.name,
+                    "description": data.description,
+                    "price": data.price,
+                    "attachments": json.loads(data.attachments),
+                }
+                send.append(new_data)
+            return send
         elif data == "users":
             filters = get_filter_by_args(User, query)
             data = db.query(User).filter(*filters).all()
-            sent = json.loads(data)
-            print(sent, data, filters)
-            return sent
+            send = []
+            for data in data:
+                new_data = {
+                    "_id": data.id,
+                    "discordid": data.discordid,
+                    "username": data.username,
+                    "purchases": json.loads(data.purchases),
+                }
+                send.append(new_data)
+            return send
 
     def find_one(data, query):
         if data == "products":
             filters = get_filter_by_args(Product, query)
             data = db.query(Product).filter(*filters).first()
-            sent = json.loads(data)
-            print(sent, data, filters)
-            return sent
+            send = {
+                "_id": data.id,
+                "name": data.name,
+                "description": data.description,
+                "price": data.price,
+                "attachments": json.loads(data.attachments),
+            }
+            print(send, data, filters)
+            return send
         elif data == "users":
             filters = get_filter_by_args(User, query)
             data = db.query(User).filter(*filters).first()
-            sent = json.loads(data)
-            print(sent, data, filters)
-            return sent
+            send = {
+                "_id": data.id,
+                "discordid": data.discordid,
+                "username": data.username,
+                "purchases": json.loads(data.purchases),
+            }
+            print(send, data, filters)
+            return send
 
 
 if config["database"]["type"].lower() == "mongodb":
