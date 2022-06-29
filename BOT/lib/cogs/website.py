@@ -73,8 +73,11 @@ async def index():
 
 @app.route("/v1/status", methods=["GET"])
 async def status():
-    result = db.command("serverStatus")
-    if result:
+    if config["database"]["type"] == "mongodb":
+        result = db.command("serverStatus")
+        if result:
+            return {"message": "Ok", "info": {"api": "Ok", "database": "Ok"}}
+    elif config["database"]["type"] == "sqlalchemy":
         return {"message": "Ok", "info": {"api": "Ok", "database": "Ok"}}
 
     return {"message": "Ok", "info": {"api": "Ok", "database": "Error"}}
