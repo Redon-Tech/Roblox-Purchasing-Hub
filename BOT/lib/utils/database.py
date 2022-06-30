@@ -13,7 +13,7 @@ with open("./BOT/lib/bot/config.json") as config_file:
     config = json.load(config_file)
 
 if config["database"]["type"].lower() == "sqlalchemy":
-    from sqlalchemy import create_engine, Column, Integer, String
+    from sqlalchemy import create_engine, Column, Integer, String, BigInteger
     from sqlalchemy.engine import URL
     from sqlalchemy.orm import declarative_base, sessionmaker
     from urllib.parse import quote_plus
@@ -43,11 +43,11 @@ if config["database"]["type"].lower() == "sqlalchemy":
         def __repr__(self) -> str:
             return f"Product(id={self.id}, name={self.name}, description={self.description}, price={self.price}, attachments={self.attachments})"
 
-    class User:
-        __table__ = "users"
+    class User(Base):
+        __tablename__ = "users"
 
         id = Column(Integer, primary_key=True)
-        discordid = Column(Integer, nullable=False)
+        discordid = Column(BigInteger, nullable=False)
         username = Column(String(20), nullable=False)
         purchases = Column(String(10000))
 
@@ -64,6 +64,7 @@ if config["database"]["type"].lower() == "sqlalchemy":
         for key, value in dic_args.items():  # type: str, any
             if key == "_id":
                 key = "id"
+
             if key.endswith("___min"):
                 key = key[:-6]
                 filters.append(getattr(model_class, key) > value)
@@ -150,10 +151,10 @@ if config["database"]["type"].lower() == "sqlalchemy":
         elif data == "users":
             user = db.query(User).filter(*filters).first()
             new_info = info["$set"]
-            if new_info["discordid"]:
+            if "discordid" in new_info:
                 user.discordid = new_info["discordid"]
-            elif new_info["purchases"]:
-                user.username = new_info["purchases"]
+            elif "purchases" in new_info:
+                user.purchases = new_info["purchases"]
             db.commit()
             return info
 
@@ -174,10 +175,10 @@ if config["database"]["type"].lower() == "sqlalchemy":
             for user in info:
                 user = db.query(User).filter(*filters).first()
                 new_info = user["$set"]
-                if new_info["discordid"]:
-                    user.discordid = new_info["discordid"]
-                elif new_info["purchases"]:
-                    user.username = new_info["purchases"]
+            if "discordid" in new_info:
+                user.discordid = new_info["discordid"]
+            elif "purchases" in new_info:
+                user.purchases = new_info["purchases"]
 
             db.commit()
             return info
@@ -245,24 +246,42 @@ if config["database"]["type"].lower() == "sqlalchemy":
         if data == "products":
             filters = get_filter_by_args(Product, query)
             data = db.query(Product).filter(*filters).first()
-            send = {
-                "_id": data.id,
-                "name": data.name,
-                "description": data.description,
-                "price": data.price,
-                "attachments": json.loads(data.attachments),
-            }
+            if data:
+                send = {
+                    "_id": data.id,
+                    "name": data.name,
+                    "description": data.description,
+                    "price": data.price,
+                    "attachments": json.loads(data.attachments),
+                }
+            else:
+                send = None
             print(send, data, filters)
             return send
         elif data == "users":
+            # if "_id" in query:
+            #     print(data, query)
+            #     data = db.query(User).get(query["_id"])
+            #     send = {
+            #         "_id": data.id,
+            #         "discordid": data.discordid,
+            #         "username": data.username,
+            #         "purchases": json.loads(data.purchases),
+            #     }
+            #     print(send, data, filters)
+            #     return send
+            # else:
             filters = get_filter_by_args(User, query)
             data = db.query(User).filter(*filters).first()
-            send = {
-                "_id": data.id,
-                "discordid": data.discordid,
-                "username": data.username,
-                "purchases": json.loads(data.purchases),
-            }
+            if data:
+                send = {
+                    "_id": data.id,
+                    "discordid": int(data.discordid),
+                    "username": data.username,
+                    "purchases": json.loads(data.purchases),
+                }
+            else:
+                send = None
             print(send, data, filters)
             return send
 

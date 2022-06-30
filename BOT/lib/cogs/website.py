@@ -157,7 +157,7 @@ async def get_user():
 @require_apikey
 async def verify_user():
     info = await request.get_json()
-    user = getuser(info["userid"])
+    user = getuser(int(info["userid"]))
     if not user or not user["discordid"]:
         key = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
         verificationkeys[key] = info["userid"]
@@ -192,7 +192,8 @@ async def give_product():
                         await member.send(attachment)
 
         return dumps(userinfo)
-    except:
+    except Exception as e:
+        raise e
         return {"errors": [{"message": "Unable to give product"}]}
 
 

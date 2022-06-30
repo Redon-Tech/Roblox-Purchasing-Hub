@@ -73,18 +73,14 @@ def unlinkuser(userid):
 
 
 def giveproduct(userid, productname):
-    purchases = db.users.find_one(
-        {"_id": userid}, {"_id": 0, "username": 0, "userid": 0}
-    )
+    purchases = find_one("users", {"_id": userid})
     existingpurchases = purchases["purchases"]
     existingpurchases.append(productname)
     return update("users", {"_id": userid}, {"$set": {"purchases": existingpurchases}})
 
 
 def revokeproduct(userid, productname):
-    purchases = db.users.find_one(
-        {"_id": userid}, {"_id": 0, "username": 0, "userid": 0}
-    )
+    purchases = find_one("users", {"_id": userid})
     existingpurchases = purchases["purchases"]
     existingpurchases.remove(productname)
     return update("users", {"_id": userid}, {"$set": {"purchases": existingpurchases}})
