@@ -10,7 +10,12 @@
     "mongodb": {
         "type": "mongodb",
         "sqlalchemy": {
-            "url": "Your sqlalchemy connection string"
+            "connector": "The SQLAlchemy connector to use, make sure to have it installed. mysql installed by default",
+            "host": "The host of the database",
+            "port": 3306,
+            "database": "the database to use",
+            "username": "the username to use",
+            "password": "the password to use, URL encoder is built-in but wont always work"
         },
         "mongodb": {
             "url": "Your mongodb connection string"

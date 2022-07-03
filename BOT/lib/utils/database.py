@@ -47,7 +47,7 @@ if config["database"]["type"].lower() == "sqlalchemy":
         __tablename__ = "users"
 
         id = Column(Integer, primary_key=True)
-        discordid = Column(BigInteger, nullable=False)
+        discordid = Column(BigInteger)
         username = Column(String(20), nullable=False)
         purchases = Column(String(10000))
 
@@ -138,8 +138,8 @@ if config["database"]["type"].lower() == "sqlalchemy":
             return info
 
     def update(data, query, info):
-        filters = get_filter_by_args(Product, query)
         if data == "products":
+            filters = get_filter_by_args(Product, query)
             product = db.query(Product).filter(*filters).first()
             new_info = info["$set"]
             product.name = new_info["name"]
@@ -149,12 +149,13 @@ if config["database"]["type"].lower() == "sqlalchemy":
             db.commit()
             return info
         elif data == "users":
+            filters = get_filter_by_args(User, query)
             user = db.query(User).filter(*filters).first()
             new_info = info["$set"]
             if "discordid" in new_info:
                 user.discordid = new_info["discordid"]
             elif "purchases" in new_info:
-                user.purchases = new_info["purchases"]
+                user.purchases = json.dumps(new_info["purchases"])
             db.commit()
             return info
 
@@ -233,9 +234,13 @@ if config["database"]["type"].lower() == "sqlalchemy":
             data = db.query(User).filter(*filters).all()
             send = []
             for data in data:
+                try:
+                    discordid = int(data.discordid)
+                except Exception:
+                    discordid = None
                 new_data = {
                     "_id": data.id,
-                    "discordid": data.discordid,
+                    "discordid": discordid,
                     "username": data.username,
                     "purchases": json.loads(data.purchases),
                 }
@@ -259,24 +264,16 @@ if config["database"]["type"].lower() == "sqlalchemy":
             print(send, data, filters)
             return send
         elif data == "users":
-            # if "_id" in query:
-            #     print(data, query)
-            #     data = db.query(User).get(query["_id"])
-            #     send = {
-            #         "_id": data.id,
-            #         "discordid": data.discordid,
-            #         "username": data.username,
-            #         "purchases": json.loads(data.purchases),
-            #     }
-            #     print(send, data, filters)
-            #     return send
-            # else:
             filters = get_filter_by_args(User, query)
             data = db.query(User).filter(*filters).first()
             if data:
+                try:
+                    discordid = int(data.discordid)
+                except Exception:
+                    discordid = None
                 send = {
                     "_id": data.id,
-                    "discordid": int(data.discordid),
+                    "discordid": discordid,
                     "username": data.username,
                     "purchases": json.loads(data.purchases),
                 }
