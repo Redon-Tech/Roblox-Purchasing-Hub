@@ -7,7 +7,7 @@
     "guild": 1234567890,
     "standardoutput": 123467890,
     "usepages": true,
-    "mongodb": {
+    "database": {
         "type": "mongodb",
         "sqlalchemy": {
             "connector": "The SQLAlchemy connector to use, make sure to have it installed. mysql installed by default",
