@@ -51,6 +51,14 @@ class Meta(Cog):
             )
         )
 
+    @Cog.listener()
+    async def on_member_join(self, member):
+        await self.set()
+
+    @Cog.listener()
+    async def on_member_remove(self, member):
+        await self.set()
+
     @command()
     async def ping(self, ctx):
         start = time()
