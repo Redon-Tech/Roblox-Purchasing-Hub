@@ -13,10 +13,12 @@ from nextcord.ext.commands import (
     BadArgument,
     MissingRequiredArgument,
     CommandOnCooldown,
+    NotOwner,
 )
 from nextcord.errors import HTTPException, Forbidden
 from nextcord import Intents, DMChannel
 from ..utils.util import UserNotVerified
+import codecs
 import json
 import os
 
@@ -38,7 +40,9 @@ class Ready(object):
 
 class Bot(BotBase):
     def __init__(self):
-        with open("./BOT/lib/bot/config.json") as config_file:
+        with codecs.open(
+            "./BOT/lib/bot/config.json", mode="r", encoding="UTF-8"
+        ) as config_file:
             self.config = json.load(config_file)
 
         self.PREFIX = self.config["prefix"]
@@ -64,9 +68,6 @@ class Bot(BotBase):
         print("Running Cog Setup...")
         self.setup()
         self.istest = istest
-
-        # with open("./BOT/lib/bot/token", "r", encoding="utf-8") as tf:
-        #    self.TOKEN = tf.read()
 
         print("Running Bot...")
         super().run(self.config["token"], reconnect=True)
@@ -126,6 +127,11 @@ class Bot(BotBase):
                 "Only verified users can use this command.", reference=ctx.message
             )
 
+        elif isinstance(exc, NotOwner):
+            await ctx.send(
+                "Only the bot owner can use this command.", reference=ctx.message
+            )
+
         elif hasattr(exc, "original"):
             if isinstance(exc.original, Forbidden):
                 await ctx.send(
@@ -151,8 +157,10 @@ class Bot(BotBase):
             await self.stdout.send("Bot Ready")
             print("  Bot Ready")
 
-            # meta = self.get_cog("Meta")
-            # await meta.set()
+            meta = self.get_cog("Meta")
+            meta._message = self.config["activity"]["presence"]
+            meta._status = self.config["activity"]["status"]
+            await meta.set()
 
             if self.istest:
                 await self.stdout.send("This was a test deploy.")

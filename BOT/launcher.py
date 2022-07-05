@@ -5,6 +5,6 @@
 """
 from lib.bot import bot
 
-version = "0.1"
+version = "2.0.0-alpha.2"
 
 bot.run(version, False)

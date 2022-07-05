@@ -1,5 +1,6 @@
 # Config file bcause I am to lazy to make a env on my computer
 config.json
+*.json.bak
 
 # Roblox Files
 *.rblx.lock

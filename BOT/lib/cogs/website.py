@@ -20,11 +20,12 @@ import string
 import random
 import requests
 import re
+import codecs
 
 app = Quart(__name__)
 
 # Had to do this cause I cant pass in self in quart
-with open("./BOT/lib/bot/config.json") as config_file:
+with codecs.open("./BOT/lib/bot/config.json", mode="r", encoding="UTF-8") as config_file:
     config = json.load(config_file)
 roblox = Client()
 verificationkeys = {}

@@ -9,8 +9,11 @@ from nextcord.ext import commands
 from .api import getuserfromdiscord
 import json
 import functools
+import codecs
 
-with open("./BOT/lib/bot/config.json") as config_file:
+with codecs.open(
+    "./BOT/lib/bot/config.json", mode="r", encoding="UTF-8"
+) as config_file:
     config = json.load(config_file)
 
 

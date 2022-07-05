@@ -8,8 +8,11 @@
 from pprint import pprint
 import json
 import certifi
+import codecs
 
-with open("./BOT/lib/bot/config.json") as config_file:
+with codecs.open(
+    "./BOT/lib/bot/config.json", mode="r", encoding="UTF-8"
+) as config_file:
     config = json.load(config_file)
 
 if config["database"]["type"].lower() == "sqlalchemy":
@@ -261,7 +264,6 @@ if config["database"]["type"].lower() == "sqlalchemy":
                 }
             else:
                 send = None
-            print(send, data, filters)
             return send
         elif data == "users":
             filters = get_filter_by_args(User, query)
@@ -279,7 +281,6 @@ if config["database"]["type"].lower() == "sqlalchemy":
                 }
             else:
                 send = None
-            print(send, data, filters)
             return send
 
 

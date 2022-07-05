@@ -6,7 +6,10 @@
     ],
     "guild": 1234567890,
     "standardoutput": 123467890,
-    "usepages": true,
+    "activity": {
+        "presence": "watching {users:,} costumers • {prefix}help • Version {version}",
+        "status": "online"
+    },
     "database": {
         "type": "mongodb",
         "sqlalchemy": {
