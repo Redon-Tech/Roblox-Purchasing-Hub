@@ -1,11 +1,11 @@
-Quart==0.17.0
-nextcord
+fastapi==0.78.0
+uvicorn==0.18.2
+nextcord==2.0.0a10
 pymongo==3.12.0
 pymongo[srv]
 sqlalchemy==1.4.39
 mysql-connector-python==8.0.29
 mariadb==1.1.2
-nextcord-ext-menus
-ro.py
-bs4
-Werkzeug
+nextcord-ext-menus==1.5.0
+roblox==2.0.0
+bs4==0.0.1

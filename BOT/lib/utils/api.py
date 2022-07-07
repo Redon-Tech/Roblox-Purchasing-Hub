@@ -45,6 +45,10 @@ def deleteproduct(name):
 
 
 ## Users
+def getusers():
+    return find("users", {})
+
+
 def getuser(userid):
     return find_one("users", {"_id": userid})
 

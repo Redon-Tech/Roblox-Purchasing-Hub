@@ -3,7 +3,7 @@
     Info: Standard utilility file.
 """
 
-from quart import request
+from fastapi import Request
 from nextcord import ui, Interaction, SelectOption, ButtonStyle
 from nextcord.ext import commands
 from .api import getuserfromdiscord
@@ -37,18 +37,6 @@ class AreYouSureView(ui.View):
     async def noiamnotsure(self, _, interaction: Interaction):
         self.Return = False
         self.stop()
-
-
-def require_apikey(view):
-    # Makes it so I dont repeat if apikey in every website base.
-    @functools.wraps(view)
-    async def wrapper(*args, **kwargs):
-        apikey = request.headers["apikey"]
-        if not apikey == config["api"]["key"]:
-            return {"errors": [{"message": "Improper API key passed"}]}
-        return await view(*args, **kwargs)
-
-    return wrapper
 
 
 def RequiresVerification():

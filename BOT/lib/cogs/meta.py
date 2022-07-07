@@ -56,7 +56,7 @@ class Meta(Cog):
         await self.set()
 
     @Cog.listener()
-    async def on_member_remove(self, member):
+    async def on_raw_member_remove(self, member):
         await self.set()
 
     @command()

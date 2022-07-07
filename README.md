@@ -22,11 +22,11 @@ This purchasing system is designed to be just a great as other systems such as m
 ## Features
 
 - Product Purchasing (Cart System)
+- Product Transfer
 
 ## Planed Features
 
 - Product Whitelist
-- Product Transfer
 - Product Loaning
 - Product Testing
 - Product Licensing
@@ -67,8 +67,8 @@ If you have any suggestions join the Discord and let us know!
 | Complete | Developer Product | A system that creates developer products automatically to make a cart system.    |
 
 ### Version TBD
-| Status      | Name           | Description                                              | Reason TBD                                     |
-| ----------- | -------------- | -------------------------------------------------------- | ---------------------------------------------- |
-| Not Started | Slash Commands | Convert all commands to slash commands (Optional?)       | Im lazy |
-| Not Started | Whitelisting   | Allow users to purchase a single wl for use in one place | Im lazy |
-| Not Started | Env            | Convert some variables to ENV variables for security     | Im lazy |
+| Status      | Name           | Description                                              | Reason TBD |
+| ----------- | -------------- | -------------------------------------------------------- | ---------- |
+| Not Started | Slash Commands | Convert all commands to slash commands (Optional?)       | Im lazy    |
+| Not Started | Whitelisting   | Allow users to purchase a single wl for use in one place | Im lazy    |
+| Not Started | Env            | Convert some variables to ENV variables for security     | Im lazy    |
