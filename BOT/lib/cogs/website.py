@@ -64,6 +64,19 @@ async def is_authorized(request: Request, call_next):
     )
 
 
+class Product(BaseModel):
+    name: str
+    description: str
+    price: float
+    attachments: list
+
+
+class Purchase(BaseModel):
+    name: str
+    description: str
+    price: int
+
+
 @app.get("/")
 async def root():
     return {"message": "Online"}
@@ -96,13 +109,6 @@ async def get_product(product: str):
     if dbresponse:
         return dbresponse
     raise HttpException(status_code=404, detail="Product not found")
-
-
-class Product(BaseModel):
-    name: str
-    description: str
-    price: float
-    attachments: list
 
 
 @app.post("/v2/product")
@@ -212,6 +218,37 @@ async def remove_product_from_user(user: str, product: str):
         userinfo = getuser(user)
 
         return userinfo
+    except Exception as e:
+        raise HttpException(status_code=500, detail="Internal Server Error")
+
+
+@app.post("/v2/purchases")
+async def create_purchase(universeId: int, purchase: Purchase):
+    try:
+        # We still have to create a purchase for ever purchase instead of reusing old ones
+        # Because Roblox is yet to update there API or even document there API on getting developer products
+        # I do know we could use more HTML parsing to get the product ID but its unreliable and isnt a API
+        # I could also use there sunsetted version but it wont be working in a few days
+        # So we are waiting for Roblox to do that
+        # And I am def not waisting database space on it
+        url = f"https://develop.roblox.com/v1/universes/{universeId}/developerproducts?name={purchase.name}&description={purchase.description}%20creation&priceInRobux={purchase.price}"
+        cookies = {".ROBLOSECURITY": config["roblox"]["cookie"]}
+
+        x_csrf_r = requests.post(
+            "https://auth.roblox.com/v2/logout",
+            data=None,
+            cookies=cookies,
+        )
+        if "x-csrf-token" in x_csrf_r.headers:
+            headers = {"x-csrf-token": x_csrf_r.headers["x-csrf-token"]}
+            r = requests.post(
+                url,
+                data=None,
+                cookies=cookies,
+                headers=headers,
+            )
+            if r.status_code == 200:
+                return r.json()
     except Exception as e:
         raise HttpException(status_code=500, detail="Internal Server Error")
 

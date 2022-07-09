@@ -4,10 +4,11 @@
 
 We only support security on currently released versions of our system all development and old versions arent supported.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.x.x   | :x:                |
-| 1.x.x   | ✅                 |
+| Version | Supported |
+| ------- | --------- |
+| 0.x.x   | :x:       |
+| 1.x.x   | ✅         |
+| 2.x.x   | ✅         |
 
 ## Reporting a Vulnerability
 
