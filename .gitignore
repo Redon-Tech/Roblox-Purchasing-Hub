@@ -1,3 +1,6 @@
+# Alembic ini file to protect against leaking database connection string
+alembic.ini
+
 # Config file bcause I am to lazy to make a env on my computer
 config.json
 *.json.bak

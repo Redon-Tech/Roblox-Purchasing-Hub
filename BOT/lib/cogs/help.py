@@ -173,7 +173,7 @@ class HelpMenu(ListPageSource):
             timestamp=nextcord.utils.utcnow(),
         )
         embed.set_footer(
-            text=f"Redon Tech RPH • {offset:,} - {min(len_data, offset+self.per_page-1):,} of {len_data:,} commands • By: parker02311"
+            text=f"Redon Hub • {offset:,} - {min(len_data, offset+self.per_page-1):,} of {len_data:,} commands • By: parker02311"
         )
 
         for name, value in fields:
@@ -221,7 +221,7 @@ class Help(Cog):
             colour=ctx.author.colour,
         )
         embed.add_field(name="Command Description", value=command.brief)
-        embed.set_footer(text="Pembroke Bot • By: parker02311")
+        embed.set_footer(text="Redon Hub • By: parker02311")
         await ctx.send(embed=embed, reference=ctx.message)
 
     @command(name="help", brief="Shows this message", catagory="misc")

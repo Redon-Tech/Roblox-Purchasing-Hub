@@ -3,6 +3,7 @@
     Info: This cog defines all the functions for the API.
 """
 from .database import db, insert, update, delete, find, find_one
+import datetime
 
 ## Products
 def getproducts():
@@ -13,19 +14,25 @@ def getproduct(name):
     return find_one("products", {"name": name})
 
 
-def createproduct(name, description, price, attachments):
+def createproduct(name, description, price, productid, attachments, tags, purchases):
     return insert(
         "products",
         {
             "name": name,
             "description": description,
             "price": price,
+            "productid": productid,
             "attachments": attachments,
+            "purchases": purchases,
+            "tags": tags,
+            "created": datetime.datetime.now(),
         },
     )
 
 
-def updateproduct(oldname, newname, description, price, attachments):
+def updateproduct(
+    oldname, newname, description, price, productid, attachments, tags, purchases
+):
     return update(
         "products",
         {"name": oldname},
@@ -34,7 +41,10 @@ def updateproduct(oldname, newname, description, price, attachments):
                 "name": newname,
                 "description": description,
                 "price": price,
+                "productid": productid,
                 "attachments": attachments,
+                "tags": tags,
+                "purchases": purchases,
             }
         },
     )
@@ -42,6 +52,34 @@ def updateproduct(oldname, newname, description, price, attachments):
 
 def deleteproduct(name):
     return delete("products", {"name": name})
+
+
+## Tags
+def gettags():
+    return find("tags", {})
+
+
+def gettag(name):
+    return find_one("tags", {"name": name})
+
+
+def createtag(name, color, textcolor):
+    return insert(
+        "tags",
+        {"name": name, "color": color, "textcolor": textcolor},
+    )
+
+
+def updatetag(oldname, newname, color, textcolor):
+    return update(
+        "tags",
+        {"name": oldname},
+        {"$set": {"name": newname, "color": color, "textcolor": textcolor}},
+    )
+
+
+def deletetag(name):
+    return delete("tags", {"name": name})
 
 
 ## Users

@@ -86,6 +86,33 @@ class DeleteView(ui.View):
 
 # Update View's
 
+
+def Update_Product(Product, Key, Value):
+    if Key == "name":
+        updateproduct(
+            Product["name"],
+            Value,
+            Product["description"],
+            Product["price"],
+            Product["productid"],
+            Product["attachments"],
+            Product["tags"],
+            Product["purchases"],
+        )
+    else:
+        Product[Key] = Value
+        updateproduct(
+            Product["name"],
+            Product["name"],
+            Product["description"],
+            Product["price"],
+            Product["productid"],
+            Product["attachments"],
+            Product["tags"],
+            Product["purchases"],
+        )
+
+
 ## What to update
 class WhatUpdateView(ui.View):
     def __init__(self, context, product, bot):
@@ -104,9 +131,7 @@ class WhatUpdateView(ui.View):
             colour=Colour.blue(),
             timestamp=nextcord.utils.utcnow(),
         )
-        embed.set_footer(
-            text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
-        )
+        embed.set_footer(text='Redon Hub • Say "Cancel" to cancel. • By: parker02311')
         view = CancelView(self.context)
         await interaction.message.edit("", embed=embed, view=None)
 
@@ -154,13 +179,7 @@ class WhatUpdateView(ui.View):
                     )
                 elif view.Return == True:
                     try:
-                        updateproduct(
-                            self.product["name"],
-                            message.content,
-                            self.product["description"],
-                            self.product["price"],
-                            self.product["attachments"],
-                        )
+                        Update_Product(self.product, "name", message.content)
                         await message.delete()
                         name = self.product["name"]
                         await self.context.send(
@@ -188,9 +207,7 @@ class WhatUpdateView(ui.View):
             colour=Colour.blue(),
             timestamp=nextcord.utils.utcnow(),
         )
-        embed.set_footer(
-            text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
-        )
+        embed.set_footer(text='Redon Hub • Say "Cancel" to cancel. • By: parker02311')
         view = CancelView(self.context)
         await interaction.message.edit("", embed=embed, view=None)
 
@@ -238,13 +255,7 @@ class WhatUpdateView(ui.View):
                     )
                 elif view.Return == True:
                     try:
-                        updateproduct(
-                            self.product["name"],
-                            self.product["name"],
-                            message.content,
-                            self.product["price"],
-                            self.product["attachments"],
-                        )
+                        Update_Product(self.product, "description", message.content)
                         await message.delete()
                         name = self.product["name"]
                         await self.context.send(
@@ -270,9 +281,7 @@ class WhatUpdateView(ui.View):
             colour=Colour.blue(),
             timestamp=nextcord.utils.utcnow(),
         )
-        embed.set_footer(
-            text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
-        )
+        embed.set_footer(text='Redon Hub • Say "Cancel" to cancel. • By: parker02311')
         view = CancelView(self.context)
         await interaction.message.edit("", embed=embed, view=None)
 
@@ -320,13 +329,83 @@ class WhatUpdateView(ui.View):
                     )
                 elif view.Return == True:
                     try:
-                        updateproduct(
-                            self.product["name"],
-                            self.product["name"],
-                            self.product["description"],
-                            int(message.content),
-                            self.product["attachments"],
+                        Update_Product(self.product, "price", int(message.content))
+                        await message.delete()
+                        name = self.product["name"]
+                        await self.context.send(
+                            f"Updated {name}.",
+                            reference=self.context.message,
+                            delete_after=5.0,
                         )
+                    except:
+                        await message.delete()
+                        await self.context.send(
+                            f"Failed to update {self.args[0]}.",
+                            reference=self.context.message,
+                            delete_after=5.0,
+                        )
+
+    @ui.button(
+        label="Product ID",
+        style=ButtonStyle.primary,
+        custom_id="products:update_productid",
+    )
+    async def update_productid(self, _, interaction: Interaction):
+        embed = Embed(
+            title=f"Update {self.product['name']}",
+            description=f"What would you like to change the product ID to?",
+            colour=Colour.blue(),
+            timestamp=nextcord.utils.utcnow(),
+        )
+        embed.set_footer(text='Redon Hub • Say "Cancel" to cancel. • By: parker02311')
+        view = CancelView(self.context)
+        await interaction.message.edit("", embed=embed, view=None)
+
+        def check(m):
+            return m.content and m.author == self.context.author
+
+        try:
+            message = await self.bot.wait_for("message", timeout=600.0, check=check)
+        except TimeoutError:
+            await interaction.message.delete()
+            await self.context.send(
+                "Timed Out", reference=self.context.message, delete_after=5.0
+            )
+            self.stop()
+
+        if not message is None and view.canceled is False:
+            if message.content.lower() == "cancel":
+                await interaction.message.delete()
+                await self.context.send(
+                    "Canceled", reference=self.context.message, delete_after=5.0
+                )
+                self.stop()
+            else:
+                await interaction.message.delete()
+                view = AreYouSureView(self.context)
+                are_u_sure_message = await self.context.send(
+                    f"Are you sure you would like to change `{self.product['productid']}` to `{int(message.content)}`?",
+                    view=view,
+                    reference=self.context.message,
+                )
+                await view.wait()
+                await are_u_sure_message.delete()
+
+                if view.Return == None:
+                    await message.delete()
+                    await self.context.send(
+                        "Timed out", reference=self.context.message, delete_after=5.0
+                    )
+                elif view.Return == False:
+                    await message.delete()
+                    await self.context.send(
+                        "Canceled update",
+                        reference=self.context.message,
+                        delete_after=5.0,
+                    )
+                elif view.Return == True:
+                    try:
+                        Update_Product(self.product, "productid", int(message.content))
                         await message.delete()
                         name = self.product["name"]
                         await self.context.send(
@@ -355,9 +434,7 @@ class WhatUpdateView(ui.View):
             timestamp=nextcord.utils.utcnow(),
         )
 
-        embed.set_footer(
-            text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
-        )
+        embed.set_footer(text='Redon Hub • Say "Cancel" to cancel. • By: parker02311')
 
         fields = [
             (
@@ -408,7 +485,7 @@ class WhatUpdateView(ui.View):
                     )
 
                     embed.set_footer(
-                        text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
+                        text='Redon Hub • Say "Cancel" to cancel. • By: parker02311'
                     )
 
                     fields = [
@@ -422,7 +499,7 @@ class WhatUpdateView(ui.View):
                     for name, value, inline in fields:
                         embed.add_field(name=name, value=value, inline=inline)
 
-                    embed.set_footer(text="Pembroke Bot • By: parker02311")
+                    embed.set_footer(text="Redon Hub • By: parker02311")
                     await interaction.message.edit("", embed=embed, view=None)
                     await self.context.send(
                         "It is recommended to not delete this message unless needed.",
@@ -452,13 +529,127 @@ class WhatUpdateView(ui.View):
                 )
             elif view.Return == True:
                 try:
-                    updateproduct(
-                        self.product["name"],
-                        self.product["name"],
-                        self.product["description"],
-                        self.product["price"],
-                        attachments,
+                    Update_Product(self.product, "attachments", attachments)
+                    await message.delete()
+                    name = self.product["name"]
+                    await self.context.send(
+                        f"Updated {name}.",
+                        reference=self.context.message,
+                        delete_after=5.0,
                     )
+                except:
+                    await message.delete()
+                    await self.context.send(
+                        f"Failed to update {self.args[0]}.",
+                        reference=self.context.message,
+                        delete_after=5.0,
+                    )
+
+    @ui.button(
+        label="Tags",
+        style=ButtonStyle.primary,
+        custom_id="products:update_tags",
+    )
+    async def update_tags(self, _, interaction: Interaction):
+        embed = Embed(
+            title=f"Update {self.product['name']}",
+            description=f'Please send the tags now. Say "Done" when you are done.',
+            colour=Colour.blue(),
+            timestamp=nextcord.utils.utcnow(),
+        )
+
+        embed.set_footer(text='Redon Hub • Say "Cancel" to cancel. • By: parker02311')
+
+        fields = [
+            (
+                "Tags",
+                "None",
+                False,
+            )
+        ]
+
+        for name, value, inline in fields:
+            embed.add_field(name=name, value=value, inline=inline)
+
+        view = CancelView(self.context)
+        await interaction.message.edit("", embed=embed, view=None)
+
+        def check(m):
+            return m.author == self.context.author
+
+        tags = []
+
+        while True:
+            try:
+                message = await self.bot.wait_for("message", timeout=600.0, check=check)
+            except TimeoutError:
+                await interaction.message.delete()
+                await self.context.send(
+                    "Timed Out", reference=self.context.message, delete_after=5.0
+                )
+                self.stop()
+
+            if message.content.lower() == "cancel":
+                await interaction.message.delete()
+                await self.context.send(
+                    "Canceled", reference=self.context.message, delete_after=5.0
+                )
+
+                break
+            if message.content.lower() == "done":
+                break
+            elif message.content:
+                tags.append(message.content)
+                embed = Embed(
+                    title=f"Update {self.product['name']}",
+                    description=f'Please send the tags now. Say "Done" when you are done.',
+                    colour=Colour.blue(),
+                    timestamp=nextcord.utils.utcnow(),
+                )
+
+                embed.set_footer(
+                    text='Redon Hub • Say "Cancel" to cancel. • By: parker02311'
+                )
+
+                fields = [
+                    (
+                        "Tags",
+                        "\n".join([tag for tag in tags]),
+                        False,
+                    )
+                ]
+
+                for name, value, inline in fields:
+                    embed.add_field(name=name, value=value, inline=inline)
+
+                embed.set_footer(text="Redon Hub • By: parker02311")
+                await interaction.message.edit("", embed=embed, view=None)
+                await message.delete()
+
+        if tags:
+            await interaction.message.delete()
+            view = AreYouSureView(self.context)
+            are_u_sure_message = await self.context.send(
+                f"Are you sure you would like to change `{self.product['tags']}` to `{tags}`?",
+                view=view,
+                reference=self.context.message,
+            )
+            await view.wait()
+            await are_u_sure_message.delete()
+
+            if view.Return == None:
+                await message.delete()
+                await self.context.send(
+                    "Timed out", reference=self.context.message, delete_after=5.0
+                )
+            elif view.Return == False:
+                await message.delete()
+                await self.context.send(
+                    "Canceled update", reference=self.context.message, delete_after=5.0
+                )
+            elif view.Return == True:
+                try:
+                    Update_Product(self.product, "tags", tags)
                     await message.delete()
                     name = self.product["name"]
                     await self.context.send(
@@ -510,7 +701,7 @@ class InitialUpdateView(ui.View):
             colour=Colour.blue(),
             timestamp=nextcord.utils.utcnow(),
         )
-        embed.set_footer(text="Redon Tech RPH • By: parker02311")
+        embed.set_footer(text="Redon Hub • By: parker02311")
         await interaction.message.edit(
             "", embed=embed, view=WhatUpdateView(self.context, product, self.bot)
         )
@@ -544,7 +735,9 @@ class Product(Cog):
                     "Product Description: "
                     + str(product["description"])
                     + "\nProduct Price: "
-                    + str(product["price"]),
+                    + str(product["price"])
+                    + "\nProduct Tags: "
+                    + str(", ".join([tag for tag in product["tags"]])),
                     False,
                 )
             )
@@ -552,7 +745,7 @@ class Product(Cog):
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
 
-        embed.set_footer(text="Redon Tech RPH • By: parker02311")
+        embed.set_footer(text="Redon Hub • By: parker02311")
 
         await ctx.send(embed=embed, reference=ctx.message)
 
@@ -599,12 +792,15 @@ class Product(Cog):
             "What do you want to call this product?",
             "What do you want the description of the product to be?",
             "What do you want the product price to be?",
+            "What is the id of the developer product?",
             "attachments",
+            "tags",
         ]
         embedmessages = []
         usermessages = []
         awnsers = []
         attachments = []
+        tags = []
 
         def check(m):
             return m.content and m.author == ctx.author
@@ -625,7 +821,7 @@ class Product(Cog):
                 )
 
                 embed.set_footer(
-                    text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
+                    text='Redon Hub • Say "Cancel" to cancel. • By: parker02311'
                 )
 
                 fields = [
@@ -675,7 +871,7 @@ class Product(Cog):
                             )
 
                             embed.set_footer(
-                                text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
+                                text='Redon Hub • Say "Cancel" to cancel. • By: parker02311'
                             )
 
                             fields = [
@@ -691,12 +887,87 @@ class Product(Cog):
                             for name, value, inline in fields:
                                 embed.add_field(name=name, value=value, inline=inline)
 
-                            embed.set_footer(text="Pembroke Bot • By: parker02311")
+                            embed.set_footer(text="Redon Hub • By: parker02311")
                             await embedmessage.edit(embed=embed)
                             await ctx.send(
                                 "It is recommended to not delete this message unless needed.",
                                 reference=message,
                             )
+            elif question == "tags":
+                embed = Embed(
+                    title=f"Create Product (Question {i+1})",
+                    description='Please send any tags\nSay "Done" when complete',
+                    colour=ctx.author.colour,
+                    timestamp=nextcord.utils.utcnow(),
+                )
+
+                embed.set_footer(
+                    text='Redon Hub • Say "Cancel" to cancel. • By: parker02311'
+                )
+
+                fields = [
+                    (
+                        "Tags",
+                        "None",
+                        False,
+                    )
+                ]
+
+                for name, value, inline in fields:
+                    embed.add_field(name=name, value=value, inline=inline)
+
+                embedmessage = await ctx.send(embed=embed)
+                embedmessages.append(embedmessage)
+                while True:
+                    try:
+                        message = await self.bot.wait_for(
+                            "message", timeout=200.0, check=attachmentcheck
+                        )
+                    except TimeoutError:
+                        await ctx.send("You didn't answer the questions in Time")
+                        return
+                    if message.content.lower() == "cancel":
+                        usermessages.append(message)
+                        for message in embedmessages:
+                            await message.delete()
+
+                        for message in usermessages:
+                            await message.delete()
+
+                        await ctx.message.delete()
+                        await ctx.send("Canceled", delete_after=5.0)
+
+                        break
+                    if message.content.lower() == "done":
+                        usermessages.append(message)
+                        break
+                    elif message.content:
+                        tags.append(message.content)
+                        embed = Embed(
+                            title=f"Create Product (Question {i+1})",
+                            description='Please send any tags\nSay "Done" when complete',
+                            colour=ctx.author.colour,
+                            timestamp=nextcord.utils.utcnow(),
+                        )
+
+                        embed.set_footer(
+                            text='Redon Hub • Say "Cancel" to cancel. • By: parker02311'
+                        )
+
+                        fields = [
+                            (
+                                "Tags",
+                                "\n".join([tag for tag in tags]),
+                                False,
+                            )
+                        ]
+
+                        for name, value, inline in fields:
+                            embed.add_field(name=name, value=value, inline=inline)
+
+                        embed.set_footer(text="Redon Hub • By: parker02311")
+                        await embedmessage.edit(embed=embed)
+                        await message.delete()
             else:
                 embed = Embed(
                     title=f"Create Product (Question {i+1})",
@@ -705,7 +976,7 @@ class Product(Cog):
                     timestamp=nextcord.utils.utcnow(),
                 )
                 embed.set_footer(
-                    text='Redon Tech RPH • Say "Cancel" to cancel. • By: parker02311'
+                    text='Redon Hub • Say "Cancel" to cancel. • By: parker02311'
                 )
                 embedmessage = await ctx.send(embed=embed)
                 embedmessages.append(embedmessage)
@@ -753,9 +1024,15 @@ class Product(Cog):
             ("Name", awnsers[0], False),
             ("Description", awnsers[1], False),
             ("Price", awnsers[2], False),
+            ("Developer Product", awnsers[3], False),
             (
                 "Attachments",
                 "\n".join([attachment for attachment in attachments]) or "None",
+                False,
+            ),
+            (
+                "Tags",
+                "\n".join([tag for tag in tags]) or "None",
                 False,
             ),
         ]
@@ -763,7 +1040,7 @@ class Product(Cog):
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
 
-        embed.set_footer(text="Redon Tech RPH • By: parker02311")
+        embed.set_footer(text="Redon Hub • By: parker02311")
         finalmessage = await ctx.send(embed=embed)
         await finalmessage.add_reaction("✅")
         await finalmessage.add_reaction("❌")
@@ -779,7 +1056,9 @@ class Product(Cog):
 
         if str(reaction.emoji) == "✅":
             try:
-                createproduct(awnsers[0], awnsers[1], awnsers[2], attachments)
+                createproduct(
+                    awnsers[0], awnsers[1], awnsers[2], awnsers[3], attachments, tags, 0
+                )
             except:
                 await ctx.send(
                     "I was unable to create the product...", delete_after=5.0
@@ -793,21 +1072,10 @@ class Product(Cog):
                 timestamp=nextcord.utils.utcnow(),
             )
 
-            fields = [
-                ("Name", awnsers[0], False),
-                ("Description", awnsers[1], False),
-                ("Price", awnsers[2], False),
-                (
-                    "Attachments",
-                    "\n".join([attachment for attachment in attachments]) or "None",
-                    False,
-                ),
-            ]
-
             for name, value, inline in fields:
                 embed.add_field(name=name, value=value, inline=inline)
 
-            embed.set_footer(text="Redon Tech RPH • By: parker02311")
+            embed.set_footer(text="Redon Hub • By: parker02311")
             await ctx.send(embed=embed)
             await finalmessage.delete()
             await ctx.message.delete()

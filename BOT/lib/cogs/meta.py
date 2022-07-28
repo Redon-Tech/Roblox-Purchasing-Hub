@@ -16,7 +16,7 @@ class Meta(Cog):
     def message(self):
         return self._message.format(
             users=len(self.bot.users),
-            prefix=self.bot.config["prefix"],
+            prefix=self.bot.config["discord"]["commands"]["prefix"],
             version=self.bot.VERSION,
         )
 

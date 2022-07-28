@@ -3,34 +3,27 @@
     Info: This cog handles the website which talks to the API.
 """
 from datetime import datetime
-from flask_discord import HttpException
+from typing import Union
 from nextcord.ext.commands import Cog, command
-from nextcord.ext.commands.core import Command
-from nextcord import Embed, Colour, colour
+from nextcord import Embed, Colour
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 from ..utils.database import db
 from ..utils.api import *
 from bson.json_util import ObjectId, dumps
 from roblox import Client
-from bs4 import BeautifulSoup
 from pydantic import BaseModel
-from typing import Union
 import nextcord
 import json
 import string
 import random
 import requests
-import re
 import codecs
 import uvicorn
-import contextlib
-import threading
-import time
 
 app = FastAPI()
 
-# Had to do this cause I cant pass in self in quart
+# Get config
 with codecs.open(
     "./BOT/lib/bot/config.json", mode="r", encoding="UTF-8"
 ) as config_file:
@@ -64,17 +57,26 @@ async def is_authorized(request: Request, call_next):
     )
 
 
+class Tag(BaseModel):
+    name: str
+    color: list
+    textcolor: list
+
+
 class Product(BaseModel):
     name: str
     description: str
     price: float
+    productid: float
     attachments: list
+    tags: list
+    purchases: Union[float, None]
 
 
 class Purchase(BaseModel):
     name: str
     description: str
-    price: int
+    price: float
 
 
 @app.get("/")
@@ -89,7 +91,10 @@ async def status():
         if result:
             return {"message": "Online", "info": {"api": "Ok", "database": "Ok"}}
     elif config["database"]["type"] == "sqlalchemy":
-        return {"message": "Online", "info": {"api": "Ok", "database": "Ok"}}
+        return {
+            "message": "Online",
+            "info": {"api": "Ok", "database": "Ok"},
+        }  # TODO: Actually check if the database is online
 
     return {"message": "Online", "info": {"api": "Ok", "database": "Error"}}
 
@@ -108,17 +113,23 @@ async def get_product(product: str):
     dbresponse = getproduct(product)
     if dbresponse:
         return dbresponse
-    raise HttpException(status_code=404, detail="Product not found")
+    raise HTTPException(status_code=404, detail="Product not found")
 
 
 @app.post("/v2/product")
 async def create_product(product: Product):
     dbresponse = createproduct(
-        product.name, product.description, product.price, product.attachments
+        product.name,
+        product.description,
+        product.price,
+        product.productid,
+        product.attachments,
+        product.tags,
+        0,
     )
     if dbresponse:
         return dbresponse
-    raise HttpException(status_code=500, detail="Internal Server Error")
+    raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @app.delete("/v2/product/{product}")
@@ -129,7 +140,7 @@ async def delete_product(product: str):
     dbresponse = deleteproduct(product)
     if dbresponse:
         return {"message": "Product deleted"}
-    raise HttpException(status_code=500, detail="Internal Server Error")
+    raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @app.put("/v2/product/{product}")
@@ -137,16 +148,22 @@ async def update_product(product: str, product_info: Product):
     if not getproduct(product):
         raise HTTPException(status_code=404, detail="Product not found")
 
+    if not product_info.purchases:
+        product_info.purchases = getproduct(product)["purchases"]
+
     dbresponse = updateproduct(
         product,
         product_info.name,
         product_info.description,
         product_info.price,
+        product_info.productid,
         product_info.attachments,
+        product_info.tags,
+        product_info.purchases,
     )
     if dbresponse:
         return dbresponse
-    raise HttpException(status_code=500, detail="Internal Server Error")
+    raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @app.get("/v2/users")
@@ -163,7 +180,7 @@ async def get_user(user: str):
     dbresponse = getuser(user)
     if dbresponse:
         return dbresponse
-    raise HttpException(status_code=404, detail="User not found")
+    raise HTTPException(status_code=404, detail="User not found")
 
 
 @app.post("/v2/user/{userid}/verify")
@@ -174,7 +191,7 @@ async def verify_user(userid: str):
         verificationkeys[key] = userid
         return {"message": "Key generated", "key": key}
 
-    raise HttpException(status_code=500, detail="Internal Server Error")
+    raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @app.post("/v2/user/{user}/product/{product}")
@@ -205,7 +222,7 @@ async def add_product_to_user(user: str, product: str):
 
         return userinfo
     except Exception as e:
-        raise HttpException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @app.delete("/v2/user/{user}/product/{product}")
@@ -219,7 +236,59 @@ async def remove_product_from_user(user: str, product: str):
 
         return userinfo
     except Exception as e:
-        raise HttpException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@app.get("/v2/tags")
+async def get_tags():
+    dbresponse = gettags()
+    results = {}
+    for i in dbresponse:
+        results[i["name"]] = i
+    return results
+
+
+@app.get("/v2/tag/{tag}")
+async def get_tag(tag: str):
+    dbresponse = gettag(tag)
+    if dbresponse:
+        return dbresponse
+    raise HTTPException(status_code=404, detail="Tag not found")
+
+
+@app.post("/v2/tag")
+async def create_tag(tag: Tag):
+    dbresponse = createtag(tag.name, tag.color, tag.textcolor)
+    if dbresponse:
+        return dbresponse
+    raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@app.delete("/v2/tag/{tag}")
+async def delete_tag(tag: str):
+    if not gettag(tag):
+        raise HTTPException(status_code=404, detail="Tag not found")
+
+    dbresponse = deletetag(tag)
+    if dbresponse:
+        return {"message": "Tag deleted"}
+    raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@app.put("/v2/tag/{tag}")
+async def update_tag(tag: str, tag_info: Tag):
+    if not gettag(tag):
+        raise HTTPException(status_code=404, detail="tag not found")
+
+    dbresponse = updatetag(
+        tag,
+        tag_info.name,
+        tag_info.color,
+        tag_info.textcolor,
+    )
+    if dbresponse:
+        return dbresponse
+    raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @app.post("/v2/purchases")
@@ -298,7 +367,6 @@ class Website(Cog):
                 await ctx.send("Verified", delete_after=5.0, reference=ctx.message)
                 await ctx.author.edit(nick=username)
             except Exception as e:
-                raise e
                 await ctx.send(
                     "I was unable to verify you",
                     delete_after=5.0,

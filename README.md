@@ -16,7 +16,7 @@ Go to the top left and hit the list button to see the table of contents!
 
 # Overview
 
-This system is designed to be self-hosted if you want a hosted option visit [Redon Tech RPH](https://rph.redon.tech)(WIP).
+This system is designed to be self-hosted if you want a hosted option visit [Redon Hub](https://rph.redon.tech)(WIP).
 This purchasing system is designed to be just a great as other systems such as myPod, Kireko, ect. with more features and 100% free and open source.
 
 ## Features

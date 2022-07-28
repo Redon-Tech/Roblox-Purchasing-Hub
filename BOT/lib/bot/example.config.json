@@ -1,14 +1,20 @@
 {
-    "token": "",
-    "prefix": ".",
-    "ownerids": [
-        1234567890
-    ],
-    "guild": 1234567890,
-    "standardoutput": 123467890,
-    "activity": {
-        "presence": "watching {users:,} costumers • {prefix}help • Version {version}",
-        "status": "online"
+    "discord": {
+        "token": "",
+        "commands": {
+            "prefix": ".",
+            "slash_commands": true
+        },
+        "ownerids": [
+            1234567890
+        ],
+        "guild": 1234567890,
+        "standardoutput": 123467890,
+        "activity": {
+            "presence": "watching {users:,} costumers • {prefix}help • Version {version}",
+            "status": "online"
+        },
+        "save_files": true
     },
     "database": {
         "type": "mongodb",

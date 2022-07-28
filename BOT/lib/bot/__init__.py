@@ -45,13 +45,13 @@ class Bot(BotBase):
         ) as config_file:
             self.config = json.load(config_file)
 
-        self.PREFIX = self.config["prefix"]
+        self.PREFIX = self.config["discord"]["commands"]["prefix"]
         self.ready = False
         self.cogs_ready = Ready()
         self.guild = None
         super().__init__(
             command_prefix=self.PREFIX,
-            owner_ids=self.config["ownerids"],
+            owner_ids=self.config["discord"]["ownerids"],
             intents=Intents.all(),
         )
 
@@ -70,7 +70,7 @@ class Bot(BotBase):
         self.istest = istest
 
         print("Running Bot...")
-        super().run(self.config["token"], reconnect=True)
+        super().run(self.config["discord"]["token"], reconnect=True)
 
     async def process_commands(self, message):
         ctx = await self.get_context(message, cls=Context)
@@ -146,8 +146,8 @@ class Bot(BotBase):
 
     async def on_ready(self):
         if not self.ready:
-            self.guild = self.get_guild(self.config["guild"])
-            self.stdout = self.get_channel(self.config["standardoutput"])
+            self.guild = self.get_guild(self.config["discord"]["guild"])
+            self.stdout = self.get_channel(self.config["discord"]["standardoutput"])
             await self.stdout.purge(limit=1000)
 
             while not self.cogs_ready.all_ready():
@@ -158,8 +158,8 @@ class Bot(BotBase):
             print("  Bot Ready")
 
             meta = self.get_cog("Meta")
-            meta._message = self.config["activity"]["presence"]
-            meta._status = self.config["activity"]["status"]
+            meta._message = self.config["discord"]["activity"]["presence"]
+            meta._status = self.config["discord"]["activity"]["status"]
             await meta.set()
 
             if self.istest:
