@@ -4,12 +4,35 @@
 """
 from datetime import datetime
 from typing import Union
-from nextcord.ext.commands import Cog, command
-from nextcord import Embed, Colour
+from nextcord.ext.commands import Cog, Context
+from nextcord import Embed, Colour, Interaction, Forbidden, SlashOption, ui, ButtonStyle
+from nextcord.utils import utcnow
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
-from ..utils.database import db
-from ..utils.api import *
+from ..utils import (
+    getauthor,
+    command,
+    db,
+    csend,
+    getproducts,
+    getproduct,
+    createproduct,
+    updateproduct,
+    deleteproduct,
+    gettags,
+    gettag,
+    createtag,
+    updatetag,
+    deletetag,
+    getusers,
+    getuser,
+    getuserfromdiscord,
+    verifyuser,
+    unlinkuser,
+    giveproduct,
+    revokeproduct,
+    config,
+)
 from bson.json_util import ObjectId, dumps
 from roblox import Client
 from pydantic import BaseModel
@@ -319,7 +342,7 @@ async def create_purchase(universeId: int, purchase: Purchase):
             if r.status_code == 200:
                 return r.json()
     except Exception as e:
-        raise HttpException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 server = uvicorn.Server(
@@ -334,21 +357,43 @@ server = uvicorn.Server(
 # Bot Handling
 
 
+class VerifyButton(ui.Button):
+    def __init__(self, label):
+        super().__init__(
+            label=label,
+            style=ButtonStyle.primary,
+            disabled=not config["roblox"]["verification"][label.lower()]["enabled"],
+        )
+        self.label = label
+
+    async def callback(self, interaction: Interaction):
+        self.view.Return = self.label.lower()
+        self.view.stop()
+
+
+class VerifyButtons(ui.View):
+    def __init__(self, bot):
+        super().__init__(timeout=None)
+        self.Return = None
+        self.bot = bot
+        self.add_item(VerifyButton("Bloxlink"))
+        self.add_item(VerifyButton("RoVer"))
+
+
 class Website(Cog):
     def __init__(self, bot):
         global sbot
         sbot = bot
         self.bot = bot
 
-    @command(
-        name="website",
-        aliases=["web", "ws", "websitestatus"],
-        brief="Displays if the website is online.",
-        catagory="misc",
-    )
-    async def website(self, ctx):
-        if ctx.message.author.id in self.bot.owner_ids:
-            await ctx.send("🟢 Website Online")
+    # @command(
+    #     name="website",
+    #     aliases=["web", "ws", "websitestatus"],
+    #     brief="Displays if the website is online.",
+    #     catagory="misc",
+    # )
+    # async def website(self, ctx):
+    #     await ctx.send("🟢 Website Online")
 
     @command(
         name="verify",
@@ -356,28 +401,140 @@ class Website(Cog):
         brief="Verify's you as a user.",
         catagory="user",
     )
-    async def verify(self, ctx, key):
-        if key in verificationkeys:
-            userid = verificationkeys[key]
-            try:
-                user = await roblox.get_user(userid)
-                username = user.name
-                verifyuser(userid, ctx.author.id, username)
-                verificationkeys.pop(key)
-                await ctx.send("Verified", delete_after=5.0, reference=ctx.message)
-                await ctx.author.edit(nick=username)
-            except Exception as e:
-                await ctx.send(
-                    "I was unable to verify you",
+    async def verify(
+        self,
+        ctx: Union[Context, Interaction],
+        key: str = SlashOption(
+            name="key",
+            description="The key that was provided from the hub",
+            required=False,
+        ),
+    ):
+        author = getauthor(ctx)
+        if not key:
+            embed = Embed(
+                title="Verify",
+                description="Please choose the source of verification that you want to use.",
+                colour=author.colour,
+                timestamp=utcnow(),
+            )
+            embed.set_footer(text="Redon Hub • By: parker02311")
+            view = VerifyButtons(bot=self.bot)
+            message = await csend(ctx, embed=embed, view=view, reference=ctx.message)
+            await view.wait()
+            if view.Return == "bloxlink":
+                request = requests.get(
+                    f"https://v3.blox.link/developer/discord/{author.id}?guildId={self.bot.config['discord']['primaryguild']}",
+                    headers={
+                        "api-key": self.bot.config["roblox"]["verification"][
+                            "bloxlink"
+                        ]["key"]
+                    },
+                )
+                if request.status_code == 200:
+                    response = request.json()
+                    if response["success"] == True:
+                        user = await roblox.get_user(response["user"]["robloxId"])
+                        username = user.name
+                        verifyuser(response["user"]["robloxId"], author.id, username)
+                        await message.delete()
+                        try:
+                            await author.edit(nick=username)
+                        except Forbidden:
+                            await csend(
+                                ctx,
+                                "I was unable to change your nickname",
+                                delete_after=5.0,
+                                reference=ctx.message,
+                            )
+                        return await csend(
+                            ctx,
+                            "Verified using Bloxlink",
+                            delete_after=5.0,
+                            reference=ctx.message,
+                        )
+
+                await csend(
+                    ctx,
+                    "Failed to verify",
                     delete_after=5.0,
                     reference=ctx.message,
                 )
+
+            elif view.Return == "rover":
+                request = requests.get(
+                    f"https://verify.eryn.io/api/user/{author.id}",
+                )
+                if request.status_code == 200:
+                    response = request.json()
+                    if response["status"] == "ok":
+                        user = await roblox.get_user(response["robloxId"])
+                        username = user.name
+                        verifyuser(response["robloxId"], author.id, username)
+                        await message.delete()
+                        try:
+                            await author.edit(nick=username)
+                        except Forbidden:
+                            await csend(
+                                ctx,
+                                "I was unable to change your nickname",
+                                delete_after=5.0,
+                                reference=ctx.message,
+                            )
+                        return await csend(
+                            ctx,
+                            "Verified using RoVer",
+                            delete_after=5.0,
+                            reference=ctx.message,
+                        )
+
+                await csend(
+                    ctx,
+                    "Failed to verify",
+                    delete_after=5.0,
+                    reference=ctx.message,
+                )
+            else:
+                await csend(
+                    ctx,
+                    "You did not awnser in time or something went wrong please try again.",
+                    reference=ctx.message,
+                )
+                return
         else:
-            await ctx.send(
-                "The provided key was incorrect please check the key and try again.",
-                delete_after=5.0,
-                reference=ctx.message,
-            )
+            if key in verificationkeys:
+                userid = verificationkeys[key]
+                try:
+                    user = await roblox.get_user(userid)
+                    username = user.name
+                    verifyuser(userid, author.id, username)
+                    verificationkeys.pop(key)
+                    await csend(
+                        ctx, "Verified", delete_after=5.0, reference=ctx.message
+                    )
+                    try:
+                        await author.edit(nick=username)
+                    except Forbidden:
+                        await csend(
+                            ctx,
+                            "I was unable to change your nickname",
+                            delete_after=5.0,
+                            reference=ctx.message,
+                        )
+                except Exception as e:
+                    await csend(
+                        ctx,
+                        "I was unable to verify you",
+                        delete_after=5.0,
+                        reference=ctx.message,
+                    )
+            else:
+                await csend(
+                    ctx,
+                    "The provided key was incorrect please check the key and try again.",
+                    delete_after=5.0,
+                    reference=ctx.message,
+                )
 
     @Cog.listener()
     async def on_ready(self):

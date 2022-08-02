@@ -3,15 +3,21 @@
     Info: This cog defines all the functions for the API.
 """
 from .database import db, insert, update, delete, find, find_one
+from typing import Union
 import datetime
 
 ## Products
-def getproducts():
+def getproducts() -> dict:
     return find("products", {})
 
 
-def getproduct(name):
-    return find_one("products", {"name": name})
+def getproduct(query: Union[str, int]) -> Union[dict, None]:
+    try:
+        return find_one("products", {"name": query}) or find_one(
+            "products", {"_id": query}
+        )
+    except Exception as e:
+        return None
 
 
 def createproduct(name, description, price, productid, attachments, tags, purchases):
@@ -115,14 +121,19 @@ def unlinkuser(userid):
 
 
 def giveproduct(userid, productname):
+    product = getproduct(productname)
     purchases = find_one("users", {"_id": userid})
-    existingpurchases = purchases["purchases"]
-    existingpurchases.append(productname)
+    existingpurchases = list(dict.fromkeys(purchases["purchases"]))
+    existingpurchases.append(product["_id"])
     return update("users", {"_id": userid}, {"$set": {"purchases": existingpurchases}})
 
 
 def revokeproduct(userid, productname):
     purchases = find_one("users", {"_id": userid})
-    existingpurchases = purchases["purchases"]
-    existingpurchases.remove(productname)
+    existingpurchases = list(dict.fromkeys(purchases["purchases"]))
+    actualproduct = getproduct(productname)
+    if actualproduct["name"] in existingpurchases:
+        existingpurchases.remove(actualproduct["name"])
+    if actualproduct["_id"] in existingpurchases:
+        existingpurchases.remove(actualproduct["_id"])
     return update("users", {"_id": userid}, {"$set": {"purchases": existingpurchases}})

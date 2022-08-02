@@ -2,10 +2,12 @@
     File: /lib/cogs/meta.py
     Info: More miscallaneous functions of the bot, like status setting, ping command, etc.
 """
-from nextcord.ext.commands import Cog, command
+from nextcord.ext.commands import Cog, is_owner
 from nextcord import Embed, Colour, Activity, ActivityType
 from datetime import datetime
 from time import time
+from ..utils.api import *
+from ..utils.command import command
 
 
 class Meta(Cog):
@@ -59,7 +61,7 @@ class Meta(Cog):
     async def on_raw_member_remove(self, member):
         await self.set()
 
-    @command()
+    @command(name="ping", brief="Check the latency and response time of the bot.")
     async def ping(self, ctx):
         start = time()
         message = await ctx.send(
@@ -70,6 +72,26 @@ class Meta(Cog):
         await message.edit(
             content=f"Pong :ping_pong:! **Latency: {self.bot.latency*100:,.0f} ms** | **Response Time {(end-start)*1000:,.0f} ms**"
         )
+
+    @command(name="migrateuserpurchases", no_slash=True)
+    @is_owner()
+    async def migrate_user_purchases(self, ctx):
+        message = await ctx.send(
+            "Please wait migrating user purchases from name to ID, look in output for any errors with the migration."
+        )
+        for user in getusers():
+            try:
+                for product in user["purchases"]:
+                    try:
+                        revokeproduct(user["_id"], product)
+                        giveproduct(user["_id"], product)
+                    except Exception as e:
+                        print(
+                            f"Unable to transfer {user['_id']}'s {product} because of ",
+                            e,
+                        )
+            except Exception as e:
+                print(f"Unable to get {user['_id']}'s purchases because of ", e)
 
     @Cog.listener()
     async def on_ready(self):

@@ -3,19 +3,27 @@
     Info: This cog handles all commands related to products
 """
 import nextcord
-from nextcord import message
-from nextcord.components import Button
+from nextcord import SlashOption
 from nextcord.errors import Forbidden
-from nextcord.ext.commands import Cog, command, has_permissions
-from nextcord import Embed, Colour, colour, ui, Interaction, SelectOption, ButtonStyle
-from datetime import datetime
-from nextcord.ui.button import button
-from nextcord.ui.select import select
-from nextcord.user import BU
-from ..utils.api import *  # Imports everything from the API util
-from ..utils.database import find
-from ..utils.util import AreYouSureView
-import json
+from nextcord.ext.commands import Cog, has_permissions, Context
+from nextcord.ext.menus import ListPageSource, ButtonMenuPages, MenuPaginationButton
+from nextcord import Embed, Colour, ui, Interaction, SelectOption, ButtonStyle
+from typing import Union
+from ..utils import (
+    AreYouSureView,
+    csend,
+    getauthor,
+    channelsend,
+    command,
+    getproducts,
+    createproduct,
+    updateproduct,
+    deleteproduct,
+    getproduct,
+    gettag,
+    getuserfromdiscord,
+    menustart,
+)
 
 productoptions = []
 
@@ -55,7 +63,8 @@ class DeleteView(ui.View):
         product = str(interaction.data["values"])[2:-2]
         await interaction.message.delete()
         view = AreYouSureView(self.context)
-        message = await interaction.channel.send(
+        message = await channelsend(
+            interaction,
             f"Are you sure you would like to delete {product}?",
             view=view,
             reference=self.context.message,
@@ -76,7 +85,7 @@ class DeleteView(ui.View):
                     f"Deleted {product}.",
                     ephemeral=True,
                 )
-            except:
+            except Exception as e:
                 await message.delete()
                 await interaction.response.send_message(
                     f"Failed to delete {product}.",
@@ -119,6 +128,7 @@ class WhatUpdateView(ui.View):
         super().__init__(timeout=600.0)
         self.context = context
         self.product = getproduct(product)
+        self.author = getauthor(context)
         self.bot = bot
 
     @ui.button(
@@ -136,28 +146,35 @@ class WhatUpdateView(ui.View):
         await interaction.message.edit("", embed=embed, view=None)
 
         def check(m):
-            return m.content and m.author == self.context.author
+            return m.content and m.author == self.author
 
         try:
             message = await self.bot.wait_for("message", timeout=600.0, check=check)
         except TimeoutError:
             await interaction.message.delete()
-            await self.context.send(
-                "Timed Out", reference=self.context.message, delete_after=5.0
+            await csend(
+                self.context,
+                "Timed Out",
+                reference=self.context.message,
+                delete_after=5.0,
             )
             self.stop()
 
         if not message is None and view.canceled is False:
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
-                await self.context.send(
-                    "Canceled", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Canceled",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
                 self.stop()
             else:
                 await interaction.message.delete()
                 view = AreYouSureView(self.context)
-                are_u_sure_message = await self.context.send(
+                are_u_sure_message = await csend(
+                    self.context,
                     f"Are you sure you would like to change `{self.product['name']}` to `{message.content}`?",
                     view=view,
                     reference=self.context.message,
@@ -167,12 +184,16 @@ class WhatUpdateView(ui.View):
 
                 if view.Return == None:
                     await message.delete()
-                    await self.context.send(
-                        "Timed out", reference=self.context.message, delete_after=5.0
+                    await csend(
+                        self.context,
+                        "Timed out",
+                        reference=self.context.message,
+                        delete_after=5.0,
                     )
                 elif view.Return == False:
                     await message.delete()
-                    await self.context.send(
+                    await csend(
+                        self.context,
                         "Canceled update",
                         reference=self.context.message,
                         delete_after=5.0,
@@ -182,15 +203,17 @@ class WhatUpdateView(ui.View):
                         Update_Product(self.product, "name", message.content)
                         await message.delete()
                         name = self.product["name"]
-                        await self.context.send(
+                        await csend(
+                            self.context,
                             f"Updated {name}.",
                             reference=self.context.message,
                             delete_after=5.0,
                         )
-                    except:
+                    except Exception as e:
                         await message.delete()
-                        await self.context.send(
-                            f"Failed to update {self.args[0]}.",
+                        await csend(
+                            self.context,
+                            f"Failed to update {name}.",
                             reference=self.context.message,
                             delete_after=5.0,
                         )
@@ -212,28 +235,35 @@ class WhatUpdateView(ui.View):
         await interaction.message.edit("", embed=embed, view=None)
 
         def check(m):
-            return m.content and m.author == self.context.author
+            return m.content and m.author == self.author
 
         try:
             message = await self.bot.wait_for("message", timeout=600.0, check=check)
         except TimeoutError:
             await interaction.message.delete()
-            await self.context.send(
-                "Timed Out", reference=self.context.message, delete_after=5.0
+            await csend(
+                self.context,
+                "Timed Out",
+                reference=self.context.message,
+                delete_after=5.0,
             )
             self.stop()
 
         if not message is None and view.canceled is False:
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
-                await self.context.send(
-                    "Canceled", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Canceled",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
                 self.stop()
             else:
                 await interaction.message.delete()
                 view = AreYouSureView(self.context)
-                are_u_sure_message = await self.context.send(
+                are_u_sure_message = await csend(
+                    self.context,
                     f"Are you sure you would like to change `{self.product['description']}` to `{message.content}`?",
                     view=view,
                     reference=self.context.message,
@@ -243,12 +273,16 @@ class WhatUpdateView(ui.View):
 
                 if view.Return == None:
                     await message.delete()
-                    await self.context.send(
-                        "Timed out", reference=self.context.message, delete_after=5.0
+                    await csend(
+                        self.context,
+                        "Timed out",
+                        reference=self.context.message,
+                        delete_after=5.0,
                     )
                 elif view.Return == False:
                     await message.delete()
-                    await self.context.send(
+                    await csend(
+                        self.context,
                         "Canceled update",
                         reference=self.context.message,
                         delete_after=5.0,
@@ -258,15 +292,17 @@ class WhatUpdateView(ui.View):
                         Update_Product(self.product, "description", message.content)
                         await message.delete()
                         name = self.product["name"]
-                        await self.context.send(
+                        await csend(
+                            self.context,
                             f"Updated {name}.",
                             reference=self.context.message,
                             delete_after=5.0,
                         )
-                    except:
+                    except Exception as e:
                         await message.delete()
-                        await self.context.send(
-                            f"Failed to update {self.args[0]}.",
+                        await csend(
+                            self.context,
+                            f"Failed to update {name}.",
                             reference=self.context.message,
                             delete_after=5.0,
                         )
@@ -286,28 +322,35 @@ class WhatUpdateView(ui.View):
         await interaction.message.edit("", embed=embed, view=None)
 
         def check(m):
-            return m.content and m.author == self.context.author
+            return m.content and m.author == self.author
 
         try:
             message = await self.bot.wait_for("message", timeout=600.0, check=check)
         except TimeoutError:
             await interaction.message.delete()
-            await self.context.send(
-                "Timed Out", reference=self.context.message, delete_after=5.0
+            await csend(
+                self.context,
+                "Timed Out",
+                reference=self.context.message,
+                delete_after=5.0,
             )
             self.stop()
 
         if not message is None and view.canceled is False:
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
-                await self.context.send(
-                    "Canceled", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Canceled",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
                 self.stop()
             else:
                 await interaction.message.delete()
                 view = AreYouSureView(self.context)
-                are_u_sure_message = await self.context.send(
+                are_u_sure_message = await csend(
+                    self.context,
                     f"Are you sure you would like to change `{self.product['price']}` to `{int(message.content)}`?",
                     view=view,
                     reference=self.context.message,
@@ -317,12 +360,16 @@ class WhatUpdateView(ui.View):
 
                 if view.Return == None:
                     await message.delete()
-                    await self.context.send(
-                        "Timed out", reference=self.context.message, delete_after=5.0
+                    await csend(
+                        self.context,
+                        "Timed out",
+                        reference=self.context.message,
+                        delete_after=5.0,
                     )
                 elif view.Return == False:
                     await message.delete()
-                    await self.context.send(
+                    await csend(
+                        self.context,
                         "Canceled update",
                         reference=self.context.message,
                         delete_after=5.0,
@@ -332,15 +379,17 @@ class WhatUpdateView(ui.View):
                         Update_Product(self.product, "price", int(message.content))
                         await message.delete()
                         name = self.product["name"]
-                        await self.context.send(
+                        await csend(
+                            self.context,
                             f"Updated {name}.",
                             reference=self.context.message,
                             delete_after=5.0,
                         )
-                    except:
+                    except Exception as e:
                         await message.delete()
-                        await self.context.send(
-                            f"Failed to update {self.args[0]}.",
+                        await csend(
+                            self.context,
+                            f"Failed to update {name}.",
                             reference=self.context.message,
                             delete_after=5.0,
                         )
@@ -362,28 +411,35 @@ class WhatUpdateView(ui.View):
         await interaction.message.edit("", embed=embed, view=None)
 
         def check(m):
-            return m.content and m.author == self.context.author
+            return m.content and m.author == self.author
 
         try:
             message = await self.bot.wait_for("message", timeout=600.0, check=check)
         except TimeoutError:
             await interaction.message.delete()
-            await self.context.send(
-                "Timed Out", reference=self.context.message, delete_after=5.0
+            await csend(
+                self.context,
+                "Timed Out",
+                reference=self.context.message,
+                delete_after=5.0,
             )
             self.stop()
 
         if not message is None and view.canceled is False:
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
-                await self.context.send(
-                    "Canceled", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Canceled",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
                 self.stop()
             else:
                 await interaction.message.delete()
                 view = AreYouSureView(self.context)
-                are_u_sure_message = await self.context.send(
+                are_u_sure_message = await csend(
+                    self.context,
                     f"Are you sure you would like to change `{self.product['productid']}` to `{int(message.content)}`?",
                     view=view,
                     reference=self.context.message,
@@ -393,12 +449,16 @@ class WhatUpdateView(ui.View):
 
                 if view.Return == None:
                     await message.delete()
-                    await self.context.send(
-                        "Timed out", reference=self.context.message, delete_after=5.0
+                    await csend(
+                        self.context,
+                        "Timed out",
+                        reference=self.context.message,
+                        delete_after=5.0,
                     )
                 elif view.Return == False:
                     await message.delete()
-                    await self.context.send(
+                    await csend(
+                        self.context,
                         "Canceled update",
                         reference=self.context.message,
                         delete_after=5.0,
@@ -408,15 +468,17 @@ class WhatUpdateView(ui.View):
                         Update_Product(self.product, "productid", int(message.content))
                         await message.delete()
                         name = self.product["name"]
-                        await self.context.send(
+                        await csend(
+                            self.context,
                             f"Updated {name}.",
                             reference=self.context.message,
                             delete_after=5.0,
                         )
-                    except:
+                    except Exception as e:
                         await message.delete()
-                        await self.context.send(
-                            f"Failed to update {self.args[0]}.",
+                        await csend(
+                            self.context,
+                            f"Failed to update {name}.",
                             reference=self.context.message,
                             delete_after=5.0,
                         )
@@ -451,7 +513,7 @@ class WhatUpdateView(ui.View):
         await interaction.message.edit("", embed=embed, view=None)
 
         def check(m):
-            return m.author == self.context.author
+            return m.author == self.author
 
         attachments = []
 
@@ -460,15 +522,21 @@ class WhatUpdateView(ui.View):
                 message = await self.bot.wait_for("message", timeout=600.0, check=check)
             except TimeoutError:
                 await interaction.message.delete()
-                await self.context.send(
-                    "Timed Out", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Timed Out",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
                 self.stop()
 
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
-                await self.context.send(
-                    "Canceled", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Canceled",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
 
                 break
@@ -501,7 +569,8 @@ class WhatUpdateView(ui.View):
 
                     embed.set_footer(text="Redon Hub • By: parker02311")
                     await interaction.message.edit("", embed=embed, view=None)
-                    await self.context.send(
+                    await csend(
+                        self.context,
                         "It is recommended to not delete this message unless needed.",
                         reference=message,
                     )
@@ -509,7 +578,8 @@ class WhatUpdateView(ui.View):
         if attachments:
             await interaction.message.delete()
             view = AreYouSureView(self.context)
-            are_u_sure_message = await self.context.send(
+            are_u_sure_message = await csend(
+                self.context,
                 f"Are you sure you would like to change `{self.product['attachments']}` to `{attachments}`?",
                 view=view,
                 reference=self.context.message,
@@ -519,28 +589,36 @@ class WhatUpdateView(ui.View):
 
             if view.Return == None:
                 await message.delete()
-                await self.context.send(
-                    "Timed out", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Timed out",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
             elif view.Return == False:
                 await message.delete()
-                await self.context.send(
-                    "Canceled update", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Canceled update",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
             elif view.Return == True:
                 try:
                     Update_Product(self.product, "attachments", attachments)
                     await message.delete()
                     name = self.product["name"]
-                    await self.context.send(
+                    await csend(
+                        self.context,
                         f"Updated {name}.",
                         reference=self.context.message,
                         delete_after=5.0,
                     )
-                except:
+                except Exception as e:
                     await message.delete()
-                    await self.context.send(
-                        f"Failed to update {self.args[0]}.",
+                    await csend(
+                        self.context,
+                        f"Failed to update {name}.",
                         reference=self.context.message,
                         delete_after=5.0,
                     )
@@ -575,7 +653,7 @@ class WhatUpdateView(ui.View):
         await interaction.message.edit("", embed=embed, view=None)
 
         def check(m):
-            return m.author == self.context.author
+            return m.author == self.author
 
         tags = []
 
@@ -584,52 +662,66 @@ class WhatUpdateView(ui.View):
                 message = await self.bot.wait_for("message", timeout=600.0, check=check)
             except TimeoutError:
                 await interaction.message.delete()
-                await self.context.send(
-                    "Timed Out", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Timed Out",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
                 self.stop()
 
             if message.content.lower() == "cancel":
                 await interaction.message.delete()
-                await self.context.send(
-                    "Canceled", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Canceled",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
 
                 break
             if message.content.lower() == "done":
                 break
             elif message.content:
-                tags.append(message.content)
-                embed = Embed(
-                    title=f"Update {self.product['name']}",
-                    description=f'Please send the tags now. Say "Done" when you are done.',
-                    colour=Colour.blue(),
-                    timestamp=nextcord.utils.utcnow(),
-                )
-
-                embed.set_footer(
-                    text='Redon Hub • Say "Cancel" to cancel. • By: parker02311'
-                )
-
-                fields = [
-                    (
-                        "Tags",
-                        "\n".join([tag for tag in tags]),
-                        False,
+                if not gettag(message.content):
+                    await message.delete()
+                    await self.context.send(
+                        "Invalid Tag",
+                        delete_after=5.0,
                     )
-                ]
+                else:
+                    tags.append(message.content)
+                    embed = Embed(
+                        title=f"Update {self.product['name']}",
+                        description=f'Please send the tags now. Say "Done" when you are done.',
+                        colour=Colour.blue(),
+                        timestamp=nextcord.utils.utcnow(),
+                    )
 
-                for name, value, inline in fields:
-                    embed.add_field(name=name, value=value, inline=inline)
+                    embed.set_footer(
+                        text='Redon Hub • Say "Cancel" to cancel. • By: parker02311'
+                    )
 
-                embed.set_footer(text="Redon Hub • By: parker02311")
-                await interaction.message.edit("", embed=embed, view=None)
-                await message.delete()
+                    fields = [
+                        (
+                            "Tags",
+                            "\n".join([tag for tag in tags]),
+                            False,
+                        )
+                    ]
+
+                    for name, value, inline in fields:
+                        embed.add_field(name=name, value=value, inline=inline)
+
+                    embed.set_footer(text="Redon Hub • By: parker02311")
+                    await interaction.message.edit("", embed=embed, view=None)
+                    await message.delete()
 
         if tags:
             await interaction.message.delete()
             view = AreYouSureView(self.context)
-            are_u_sure_message = await self.context.send(
+            are_u_sure_message = await csend(
+                self.context,
                 f"Are you sure you would like to change `{self.product['tags']}` to `{tags}`?",
                 view=view,
                 reference=self.context.message,
@@ -639,28 +731,36 @@ class WhatUpdateView(ui.View):
 
             if view.Return == None:
                 await message.delete()
-                await self.context.send(
-                    "Timed out", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Timed out",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
             elif view.Return == False:
                 await message.delete()
-                await self.context.send(
-                    "Canceled update", reference=self.context.message, delete_after=5.0
+                await csend(
+                    self.context,
+                    "Canceled update",
+                    reference=self.context.message,
+                    delete_after=5.0,
                 )
             elif view.Return == True:
                 try:
                     Update_Product(self.product, "tags", tags)
                     await message.delete()
                     name = self.product["name"]
-                    await self.context.send(
+                    await csend(
+                        self.context,
                         f"Updated {name}.",
                         reference=self.context.message,
                         delete_after=5.0,
                     )
-                except:
+                except Exception as e:
                     await message.delete()
-                    await self.context.send(
-                        f"Failed to update {self.args[0]}.",
+                    await csend(
+                        self.context,
+                        f"Failed to update {name}.",
                         reference=self.context.message,
                         delete_after=5.0,
                     )
@@ -670,8 +770,8 @@ class WhatUpdateView(ui.View):
     )
     async def update_cancel(self, _, interaction: Interaction):
         await interaction.message.delete()
-        await self.context.send(
-            "Canceled", reference=self.context.message, delete_after=5.0
+        await csend(
+            self.context, "Canceled", reference=self.context.message, delete_after=5.0
         )
         self.stop()
 
@@ -707,6 +807,73 @@ class InitialUpdateView(ui.View):
         )
 
 
+# Product Page
+
+
+class ProductPageButton(ui.Button):
+    def __init__(self, menu, buttontype):
+        super().__init__(label=buttontype, style=ButtonStyle.primary)
+        self.menu = menu
+        self.buttontype = buttontype
+
+    async def callback(self, interaction: Interaction):
+        if self.buttontype == "Next":
+            await self.menu.go_to_next_page()
+        elif self.buttontype == "Previous":
+            await self.menu.go_to_previous_page()
+
+
+class ProductPageView(ListPageSource):
+    def __init__(self, bot, author, data):
+        self.bot = bot
+        self.data = data
+        self.author = author
+        super().__init__(data, per_page=2)
+
+    async def write_page(self, menu, products):
+        offset = (menu.current_page * self.per_page) + 1
+        length = len(self.data)
+
+        embed = Embed(
+            title=f"Products",
+            description=f"To get more information on a product run `{self.bot.PREFIX}product (product)`!\n\n"
+            + "\n".join([product for product in products]),
+            colour=self.author.colour,
+            timestamp=nextcord.utils.utcnow(),
+        )
+
+        embed.set_footer(
+            text=f"Redon Hub • {offset:,} - {min(length, offset+self.per_page-1):,} of {length:,} Products • By: parker02311"
+        )
+
+        return embed
+
+    async def format_page(self, menu: ButtonMenuPages, entries):
+        assert self.per_page != 1, "Cannot have less then 2 products per page"
+        products = []
+
+        for product in entries:
+            products.append(product["name"])
+
+        menu.clear_items()
+        menu.add_item(
+            ProductPageButton(menu, "Previous"),
+        )
+        menu.add_item(
+            ProductPageButton(menu, "Next"),
+        )
+
+        max_pages = self.get_max_pages()
+        for child in menu.children:
+            if isinstance(child, nextcord.ui.Button):
+                if str(child.label) == "Previous":
+                    child.disabled = menu.current_page == 0
+                elif max_pages and str(child.label) == "Next":
+                    child.disabled = menu.current_page == max_pages - 1
+
+        return {"embed": await self.write_page(menu, products), "view": menu}
+
+
 class Product(Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -717,37 +884,63 @@ class Product(Cog):
         brief="Sends a list of all products.",
         catagory="product",
     )
-    async def getproducts(self, ctx):
+    async def getproducts(self, ctx: Union[Context, Interaction]):
+        author = getauthor(ctx)
         dbresponse = getproducts()
+
+        menu = ButtonMenuPages(
+            source=ProductPageView(self.bot, author, dbresponse),
+            timeout=60.0,
+            style=nextcord.ButtonStyle.primary,
+        )
+        await menustart(menu, ctx)
+
+    @command(
+        name="product",
+        aliases=["viewproduct", "getproductinfo", "productinfo"],
+        brief="Sends information on a product.",
+        catagory="product",
+    )
+    async def getproduct(
+        self,
+        ctx: Union[Context, Interaction],
+        *,
+        product: str = SlashOption(
+            name="product", description="The product name", required=True
+        ),
+    ):
+        author = getauthor(ctx)
+        dbresponse = getproduct(product)
+
+        if dbresponse == None:
+            await csend(
+                ctx,
+                f"{product} is not a valid product.",
+                reference=ctx.message,
+                delete_after=5.0,
+            )
+            return
+
         embed = Embed(
-            title="Products",
-            description=f"Here is all the products I was able to get for this server!",
-            colour=ctx.author.colour,
+            title=dbresponse["name"],
+            description=dbresponse["description"],
+            colour=author.colour,
             timestamp=nextcord.utils.utcnow(),
         )
+        embed.add_field(name="Price", value=str(dbresponse["price"]), inline=False)
+        embed.add_field(
+            name="Tags",
+            value=", ".join([tag for tag in dbresponse["tags"]]),
+            inline=False,
+        )
 
-        fields = []
+        embed.set_footer(text=f"Redon Hub • By: parker02311")
 
-        for product in dbresponse:
-            fields.append(
-                (
-                    product["name"],
-                    "Product Description: "
-                    + str(product["description"])
-                    + "\nProduct Price: "
-                    + str(product["price"])
-                    + "\nProduct Tags: "
-                    + str(", ".join([tag for tag in product["tags"]])),
-                    False,
-                )
-            )
-
-        for name, value, inline in fields:
-            embed.add_field(name=name, value=value, inline=inline)
-
-        embed.set_footer(text="Redon Hub • By: parker02311")
-
-        await ctx.send(embed=embed, reference=ctx.message)
+        await csend(
+            ctx,
+            embed=embed,
+            reference=ctx.message,
+        )
 
     @command(
         name="retrieve",
@@ -755,30 +948,53 @@ class Product(Cog):
         brief="DM's you the specified product if you own it.",
         catagory="product",
     )
-    async def retrieveproduct(self, ctx, *, product: str):
-        userinfo = getuserfromdiscord(ctx.author.id)
+    async def retrieveproduct(
+        self,
+        ctx: Union[Context, Interaction],
+        *,
+        product: str = SlashOption(
+            name="product", description="The product name", required=True
+        ),
+    ):
+        actualproduct = getproduct(product)
+        author = getauthor(ctx)
+        userinfo = getuserfromdiscord(author.id)
 
         if userinfo:
-            if product in userinfo["purchases"]:
+            if (
+                actualproduct["name"] in userinfo["purchases"]
+                or actualproduct["_id"] in userinfo["purchases"]
+            ):
                 embed = Embed(
                     title="Thanks for your purchase!",
-                    description=f"Thank you for your purchase of {product} please get it by using the links below.",
+                    description=f"Thank you for your purchase of **{product}** please get it by using the links below.",
                     colour=Colour.from_rgb(255, 255, 255),
                     timestamp=nextcord.utils.utcnow(),
                 )
 
                 try:
-                    if not ctx.author.dm_channel:
-                        await ctx.author.create_dm()
+                    if not author.dm_channel:
+                        await author.create_dm()
 
-                    await ctx.author.dm_channel.send(embed=embed)
+                    await author.dm_channel.send(embed=embed)
 
                     for attachment in getproduct(product)["attachments"]:
-                        await ctx.author.dm_channel.send(attachment)
-                except Forbidden:
-                    await ctx.send(
-                        "Please open your DM's and try again.", reference=ctx.message
+                        await author.dm_channel.send(attachment)
+
+                    await csend(
+                        ctx,
+                        "I have sent you a DM with the product.",
+                        reference=ctx.message,
                     )
+                except Exception as e:
+                    if e == Forbidden:
+                        await csend(
+                            ctx,
+                            "Please open your DM's and try again.",
+                            reference=ctx.message,
+                        )
+                    else:
+                        raise e
 
     @command(
         name="createproduct",
@@ -787,7 +1003,8 @@ class Product(Cog):
         catagory="product",
     )
     @has_permissions(manage_guild=True)
-    async def createproduct(self, ctx):
+    async def createproduct(self, ctx: Union[Context, Interaction]):
+        author = getauthor(ctx)
         questions = [
             "What do you want to call this product?",
             "What do you want the description of the product to be?",
@@ -803,20 +1020,20 @@ class Product(Cog):
         tags = []
 
         def check(m):
-            return m.content and m.author == ctx.author
+            return m.content and m.author == author
 
         def emojicheck(self, user):
-            return user == ctx.author
+            return user == author
 
         def attachmentcheck(m):
-            return m.author == ctx.author
+            return m.author == author
 
         for i, question in enumerate(questions):
             if question == "attachments":
                 embed = Embed(
                     title=f"Create Product (Question {i+1})",
                     description='Please post any attachments\nSay "Done" when complete',
-                    colour=ctx.author.colour,
+                    colour=author.colour,
                     timestamp=nextcord.utils.utcnow(),
                 )
 
@@ -853,7 +1070,8 @@ class Product(Cog):
                         for message in usermessages:
                             await message.delete()
 
-                        await ctx.message.delete()
+                        if type(ctx) == Context:
+                            await ctx.message.delete()
                         await ctx.send("Canceled", delete_after=5.0)
 
                         break
@@ -866,7 +1084,7 @@ class Product(Cog):
                             embed = Embed(
                                 title=f"Create Product (Question {i+1})",
                                 description='Please post any attachments\nSay "Done" when complete',
-                                colour=ctx.author.colour,
+                                colour=author.colour,
                                 timestamp=nextcord.utils.utcnow(),
                             )
 
@@ -889,7 +1107,7 @@ class Product(Cog):
 
                             embed.set_footer(text="Redon Hub • By: parker02311")
                             await embedmessage.edit(embed=embed)
-                            await ctx.send(
+                            await csend(
                                 "It is recommended to not delete this message unless needed.",
                                 reference=message,
                             )
@@ -897,7 +1115,7 @@ class Product(Cog):
                 embed = Embed(
                     title=f"Create Product (Question {i+1})",
                     description='Please send any tags\nSay "Done" when complete',
-                    colour=ctx.author.colour,
+                    colour=author.colour,
                     timestamp=nextcord.utils.utcnow(),
                 )
 
@@ -934,7 +1152,8 @@ class Product(Cog):
                         for message in usermessages:
                             await message.delete()
 
-                        await ctx.message.delete()
+                        if type(ctx) == Context:
+                            await ctx.message.delete()
                         await ctx.send("Canceled", delete_after=5.0)
 
                         break
@@ -946,7 +1165,7 @@ class Product(Cog):
                         embed = Embed(
                             title=f"Create Product (Question {i+1})",
                             description='Please send any tags\nSay "Done" when complete',
-                            colour=ctx.author.colour,
+                            colour=author.colour,
                             timestamp=nextcord.utils.utcnow(),
                         )
 
@@ -972,7 +1191,7 @@ class Product(Cog):
                 embed = Embed(
                     title=f"Create Product (Question {i+1})",
                     description=question,
-                    colour=ctx.author.colour,
+                    colour=author.colour,
                     timestamp=nextcord.utils.utcnow(),
                 )
                 embed.set_footer(
@@ -995,7 +1214,8 @@ class Product(Cog):
                     for message in usermessages:
                         await message.delete()
 
-                    await ctx.message.delete()
+                    if type(ctx) == Context:
+                        await ctx.message.delete()
                     await ctx.send("Canceled", delete_after=5.0)
 
                     break
@@ -1016,7 +1236,7 @@ class Product(Cog):
         embed = Embed(
             title="Confirm Product Creation",
             description="✅ to confirm\n❌ to cancel",
-            colour=ctx.author.colour,
+            colour=author.colour,
             timestamp=nextcord.utils.utcnow(),
         )
 
@@ -1051,7 +1271,7 @@ class Product(Cog):
                 "reaction_add", timeout=200.0, check=emojicheck
             )
         except TimeoutError:
-            await ctx.author.send("You didn't respond in time.")
+            await ctx.send("You didn't respond in time.", delete_after=5.0)
             return
 
         if str(reaction.emoji) == "✅":
@@ -1059,7 +1279,7 @@ class Product(Cog):
                 createproduct(
                     awnsers[0], awnsers[1], awnsers[2], awnsers[3], attachments, tags, 0
                 )
-            except:
+            except Exception as e:
                 await ctx.send(
                     "I was unable to create the product...", delete_after=5.0
                 )
@@ -1068,7 +1288,7 @@ class Product(Cog):
             embed = Embed(
                 title="Product Created",
                 description="The product was successfully created.",
-                colour=ctx.author.colour,
+                colour=author.colour,
                 timestamp=nextcord.utils.utcnow(),
             )
 
@@ -1087,9 +1307,12 @@ class Product(Cog):
         catagory="product",
     )
     @has_permissions(manage_guild=True)
-    async def deleteproduct(self, ctx):
-        await ctx.send(
-            "Chose a product to delete", view=DeleteView(ctx), reference=ctx.message
+    async def deleteproduct(self, ctx: Union[Context, Interaction]):
+        await csend(
+            ctx,
+            "Chose a product to delete",
+            view=DeleteView(ctx),
+            reference=ctx.message,
         )
 
     @command(
@@ -1099,8 +1322,9 @@ class Product(Cog):
         catagory="product",
     )
     @has_permissions(manage_guild=True)
-    async def updateproduct(self, ctx):
-        await ctx.send(
+    async def updateproduct(self, ctx: Union[Context, Interaction]):
+        await csend(
+            ctx,
             "Chose a product to update.",
             view=InitialUpdateView(ctx, self.bot),
             reference=ctx.message,

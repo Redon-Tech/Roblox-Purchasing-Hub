@@ -3,12 +3,15 @@
         "token": "",
         "commands": {
             "prefix": ".",
-            "slash_commands": true
+            "slash_commands": true,
+            "command_guilds": [
+                1234567890
+            ]
         },
         "ownerids": [
             1234567890
         ],
-        "guild": 1234567890,
+        "primaryguild": 1234567890,
         "standardoutput": 123467890,
         "activity": {
             "presence": "watching {users:,} costumers • {prefix}help • Version {version}",
@@ -31,7 +34,20 @@
         }
     },
     "roblox": {
-        "cookie": "fullrobloxcookie"
+        "developer_products": {
+            "enabled": true,
+            "as_backup_only": true
+        },
+        "cookie": "fullrobloxcookie",
+        "verification": {
+            "bloxlink": {
+                "enabled": true,
+                "key": "https://blox.link/dashboard/developers"
+            },
+            "rover": {
+                "enabled": true
+            }
+        }
     },
     "api": {
         "ip": "0.0.0.0",

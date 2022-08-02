@@ -2,10 +2,11 @@
     File: /lib/utils/util.py
     Info: Standard utilility file.
 """
-
+from typing import Union
 from fastapi import Request
 from nextcord import ui, Interaction, SelectOption, ButtonStyle
 from nextcord.ext import commands
+from nextcord.ext.menus import Menu
 from .api import getuserfromdiscord
 import json
 import functools
@@ -39,14 +40,35 @@ class AreYouSureView(ui.View):
         self.stop()
 
 
-def RequiresVerification():
-    def predicate(ctx):
-        if getuserfromdiscord(ctx.author.id) is None:
-            raise UserNotVerified
+# A new send method made to allow reference to be passed but not for interaction responses
+async def csend(ctx: Union[commands.Context, Interaction], *args, **kwargs):
+    if type(ctx) == Interaction:
+        if "reference" in kwargs.keys():
+            kwargs.pop("reference")
 
-        return True
+    return await ctx.send(*args, **kwargs)
 
-    return commands.check(predicate)
+
+async def channelsend(interaction: Interaction, *args, **kwargs):
+    if "reference" in kwargs.keys() and interaction.message == None:
+        kwargs.pop("reference")
+
+    return await interaction.channel.send(*args, **kwargs)
+
+
+# A method to get the author of a command no matter if it's a message or an interaction
+def getauthor(ctx: Union[commands.Context, Interaction]):
+    if type(ctx) == Interaction:
+        return ctx.user
+    else:
+        return ctx.author
+
+
+def menustart(menu: Menu, ctx: Union[commands.Context, Interaction]):
+    if type(ctx) == Interaction:
+        return menu.start(interaction=ctx)
+    else:
+        return menu.start(ctx=ctx)
 
 
 class UserNotVerified(commands.errors.CheckFailure):
@@ -55,3 +77,13 @@ class UserNotVerified(commands.errors.CheckFailure):
 
 class UserOwnsProduct(Exception):
     pass
+
+
+def RequiresVerification():
+    def predicate(ctx):
+        if getuserfromdiscord(ctx.author.id) is None:
+            raise UserNotVerified
+
+        return True
+
+    return commands.check(predicate)

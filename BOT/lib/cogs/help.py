@@ -78,12 +78,15 @@ class HelpSelect(ui.Select):
         self.commands = commands
         self.usercommands = []
         self.productcommands = []
+        self.tagcommands = []
         self.othercommands = []
         for command in commands:
             if command.cog.qualified_name == "User" or command.name == "verify":
                 self.usercommands.append(command)
             elif command.cog.qualified_name == "Product":
                 self.productcommands.append(command)
+            elif command.cog.qualified_name == "Tag":
+                self.tagcommands.append(command)
             else:
                 self.othercommands.append(command)
         placeholder = ""
@@ -91,6 +94,8 @@ class HelpSelect(ui.Select):
             placeholder = "User"
         elif loadedcommands == self.productcommands:
             placeholder = "Product"
+        elif loadedcommands == self.tagcommands:
+            placeholder = "Tag"
         elif loadedcommands == self.othercommands:
             placeholder = "Misc"
         else:
@@ -105,6 +110,7 @@ class HelpSelect(ui.Select):
                 SelectOption(
                     label="Product", description="View help on all product commands."
                 ),
+                SelectOption(label="Tag", description="View help on all tag commands."),
                 SelectOption(
                     label="Misc", description="View help on all other commands."
                 ),
@@ -138,6 +144,15 @@ class HelpSelect(ui.Select):
             elif selection == "Product":
                 menu = ButtonMenuPages(
                     source=HelpMenu(self.context, self.commands, self.productcommands),
+                    clear_reactions_after=True,
+                    timeout=60.0,
+                    style=nextcord.ButtonStyle.primary,
+                )
+                await menu.start(self.context)
+                await interaction.message.delete()
+            elif selection == "Tag":
+                menu = ButtonMenuPages(
+                    source=HelpMenu(self.context, self.commands, self.tagcommands),
                     clear_reactions_after=True,
                     timeout=60.0,
                     style=nextcord.ButtonStyle.primary,

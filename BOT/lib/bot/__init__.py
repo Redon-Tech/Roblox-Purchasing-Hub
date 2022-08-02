@@ -83,6 +83,8 @@ class Bot(BotBase):
                 await ctx.send("Bot is still setting up please wait.")
 
     async def on_connect(self):
+        bot.add_all_application_commands()
+        await bot.sync_application_commands()
         print("Bot Connected")
 
     async def on_disconnect(self):
@@ -146,7 +148,7 @@ class Bot(BotBase):
 
     async def on_ready(self):
         if not self.ready:
-            self.guild = self.get_guild(self.config["discord"]["guild"])
+            self.guild = self.get_guild(self.config["discord"]["primaryguild"])
             self.stdout = self.get_channel(self.config["discord"]["standardoutput"])
             await self.stdout.purge(limit=1000)
 

@@ -16,39 +16,64 @@ Go to the top left and hit the list button to see the table of contents!
 
 # Overview
 
+To Be Redone
+
 This system is designed to be self-hosted if you want a hosted option visit [Redon Hub](https://rph.redon.tech)(WIP).
 This purchasing system is designed to be just a great as other systems such as myPod, Kireko, ect. with more features and 100% free and open source.
 
 ## Features
+
+To Be Redone
 
 - Product Purchasing (Cart System)
 - Product Transfer
 
 ## Planed Features
 
+To Be Redone
+
 - Product Whitelist
 - Product Loaning
 - Product Testing
-- Product Licensing
+- Product Licensing (WTF Did I mean by this??? Someone please lmk if you have an idea)
 - Monthly Subscriptions (Via Private Servers and dev products)
 
 If you have any suggestions join the Discord and let us know!
 
 # Installation
 
-[Video](https://youtu.be/0eVR3i_ZKoQ)
-
-[Written](https://redon-tech.github.io/RPH-Docs/setup/)
+To Be Redone
 
 # Documentation
 
-[Visit the docs](https://redon-tech.github.io/RPH-Docs/)
+To Be Redone
 
 # Developer Info
 
-## TD
+## ToDo
 
-### V1.1
+### V2.0
+| Status   | Name               | Description                                       |
+| -------- | ------------------ | ------------------------------------------------- |
+| Complete | SQLAlchemy Support | Add support for SQLAlchemy                        |
+| Complete | API Rewrite        | Update API to V2                                  |
+| Complete | Tags               | Add product tags                                  |
+| WIP      | Slash Commands     | Convert all commands to slash commands (Optional) |
+| WIP      | Command Update     | Update some commands to be more modern            |
+| WIP      | New Roblox Hub     | Update the hub to be more modern and customizable |
+
+### Version TBD
+| Status | Name          | Description                                                                                                   | Reason TBD                    |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| V2?    | Whitelisting  | Allow users to purchase a single wl for use in one place                                                      | Don't want V2 to take to long |
+| V2?    | Testing       | Allow people to test products within the game or within another game via a button                             | Don't want V2 to take to long |
+| V2?    | Loaning       | Allow people to temporarily loan there product to another user, allowing for them to take it back at any time | Don't want V2 to take to long |
+| V2.x?  | Subscriptions | Allow people to have a subscription for a product                                                             | Im lazy                       |
+| V2?    | Env           | Convert some variables to ENV variables for security                                                          | Im lazy                       |
+
+### V1.x
+
+V1.1
 | Status   | Name        | Description                                 |
 | -------- | ----------- | ------------------------------------------- |
 | Complete | Unlink      | Allow users to unlink and relink            |
@@ -56,8 +81,7 @@ If you have any suggestions join the Discord and let us know!
 | Complete | PPS         | Send products to users after purchase/given |
 | Complete | QOL Changes | Quality Of Life Changes                     |
 
-### V1.0
-
+V1.0
 | Status   | Name              | Description                                                                      |
 | -------- | ----------------- | -------------------------------------------------------------------------------- |
 | Complete | Product API       | Create, delete, update products                                                  |
@@ -65,10 +89,3 @@ If you have any suggestions join the Discord and let us know!
 | Complete | Bot Commands      | Commands to create, delete, update product and verify, give products, and revoke |
 | Complete | Create hub GUI    | A simple UI that does not need to be advanced.                                   |
 | Complete | Developer Product | A system that creates developer products automatically to make a cart system.    |
-
-### Version TBD
-| Status      | Name           | Description                                              | Reason TBD |
-| ----------- | -------------- | -------------------------------------------------------- | ---------- |
-| Not Started | Slash Commands | Convert all commands to slash commands (Optional?)       | Im lazy    |
-| Not Started | Whitelisting   | Allow users to purchase a single wl for use in one place | Im lazy    |
-| Not Started | Env            | Convert some variables to ENV variables for security     | Im lazy    |
