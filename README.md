@@ -1,3 +1,6 @@
+This system is currently undergoing a major redo, view more info [here](https://github.com/Redon-Tech/Roblox-Purchasing-Hub/tree/development)
+
+
 <h1 align="center">Roblox Purchasing Hub</h1>
 
 <div align="center">
