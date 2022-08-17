@@ -1,3 +1,7 @@
+# Docs
+/site
+.DS_Store
+
 # Alembic ini file to protect against leaking database connection string
 alembic.ini
 

@@ -7,7 +7,8 @@ from typing import Union
 from nextcord.ext.commands import Cog, Context
 from nextcord import Embed, Colour, Interaction, Forbidden, SlashOption, ui, ButtonStyle
 from nextcord.utils import utcnow
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.responses import JSONResponse
 from ..utils import (
     getauthor,
@@ -33,7 +34,7 @@ from ..utils import (
     revokeproduct,
     config,
 )
-from bson.json_util import ObjectId, dumps
+from bson.json_util import ObjectId, dumps, loads
 from roblox import Client
 from pydantic import BaseModel
 import nextcord
@@ -51,6 +52,8 @@ with codecs.open(
     "./BOT/lib/bot/config.json", mode="r", encoding="UTF-8"
 ) as config_file:
     config = json.load(config_file)
+X_API_KEY = OAuth2PasswordBearer(config["api"]["key"])
+IS_MONGODB = config["database"]["type"] == "mongodb"
 roblox = Client()
 verificationkeys = {}
 sbot = None
@@ -61,23 +64,25 @@ class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, ObjectId):
             return str(obj)
+        elif isinstance(obj, datetime):
+            return str(obj)
         return super(MyEncoder, self).default(obj)
 
 
-app.json_encoder = MyEncoder
+json_encoder = MyEncoder()
 
 # Website Handling
 
 
 # This means all requests require authentication, more secure but kinda annoying
-@app.middleware("http")
-async def is_authorized(request: Request, call_next):
-    if request.headers.get("Authorization") == config["api"]["key"]:
-        return await call_next(request)
+def api_auth(x_api_key: str = Depends(X_API_KEY)):
+    if x_api_key != config["api"]["key"]:
+        raise HTTPException(status_code=401, detail="Invalid API Key.")
 
-    return JSONResponse(
-        status_code=401, content={"error": 401, "details": "API Key is invalid"}
-    )
+    return x_api_key
+
+
+# Schemas
 
 
 class Tag(BaseModel):
@@ -102,12 +107,18 @@ class Purchase(BaseModel):
     price: float
 
 
+# Helpers
+def helper(dictionary: dict) -> dict:
+    # Don't even ask, it works and that's all we want
+    return json.loads(json.dumps(dictionary, default=str))
+
+
 @app.get("/")
 async def root():
     return {"message": "Online"}
 
 
-@app.get("/v2/status")
+@app.get("/v2/status", dependencies=[Depends(api_auth)])
 async def status():
     if config["database"]["type"] == "mongodb":
         result = db.command("serverStatus")
@@ -122,40 +133,42 @@ async def status():
     return {"message": "Online", "info": {"api": "Ok", "database": "Error"}}
 
 
-@app.get("/v2/products")
+@app.get("/v2/products", dependencies=[Depends(api_auth)])
 async def get_products():
     dbresponse = getproducts()
     results = {}
     for i in dbresponse:
-        results[i["name"]] = i
+        results[i["name"]] = helper(i)
     return results
 
 
-@app.get("/v2/product/{product}")
+@app.get("/v2/product/{product}", dependencies=[Depends(api_auth)])
 async def get_product(product: str):
-    dbresponse = getproduct(product)
+    dbresponse = helper(getproduct(product))
     if dbresponse:
         return dbresponse
     raise HTTPException(status_code=404, detail="Product not found")
 
 
-@app.post("/v2/product")
+@app.post("/v2/product", dependencies=[Depends(api_auth)])
 async def create_product(product: Product):
-    dbresponse = createproduct(
-        product.name,
-        product.description,
-        product.price,
-        product.productid,
-        product.attachments,
-        product.tags,
-        0,
+    dbresponse = helper(
+        createproduct(
+            product.name,
+            product.description,
+            product.price,
+            product.productid,
+            product.attachments,
+            product.tags,
+            0,
+        )
     )
     if dbresponse:
         return dbresponse
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.delete("/v2/product/{product}")
+@app.delete("/v2/product/{product}", dependencies=[Depends(api_auth)])
 async def delete_product(product: str):
     if not getproduct(product):
         raise HTTPException(status_code=404, detail="Product not found")
@@ -166,7 +179,7 @@ async def delete_product(product: str):
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.put("/v2/product/{product}")
+@app.put("/v2/product/{product}", dependencies=[Depends(api_auth)])
 async def update_product(product: str, product_info: Product):
     if not getproduct(product):
         raise HTTPException(status_code=404, detail="Product not found")
@@ -174,15 +187,17 @@ async def update_product(product: str, product_info: Product):
     if not product_info.purchases:
         product_info.purchases = getproduct(product)["purchases"]
 
-    dbresponse = updateproduct(
-        product,
-        product_info.name,
-        product_info.description,
-        product_info.price,
-        product_info.productid,
-        product_info.attachments,
-        product_info.tags,
-        product_info.purchases,
+    dbresponse = helper(
+        updateproduct(
+            product,
+            product_info.name,
+            product_info.description,
+            product_info.price,
+            product_info.productid,
+            product_info.attachments,
+            product_info.tags,
+            product_info.purchases,
+        )
     )
     if dbresponse:
         return dbresponse
@@ -194,19 +209,19 @@ async def get_users():
     dbresponse = getusers()
     results = {}
     for i in dbresponse:
-        results[i["_id"]] = i
+        results[i["_id"]] = helper(i)
     return results
 
 
 @app.get("/v2/user/{user}")
 async def get_user(user: str):
-    dbresponse = getuser(user)
+    dbresponse = helper(getuser(user))
     if dbresponse:
         return dbresponse
     raise HTTPException(status_code=404, detail="User not found")
 
 
-@app.post("/v2/user/{userid}/verify")
+@app.post("/v2/user/{userid}/verify", dependencies=[Depends(api_auth)])
 async def verify_user(userid: str):
     user = getuser(userid)
     if not user or not user["discordid"]:
@@ -217,14 +232,14 @@ async def verify_user(userid: str):
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.post("/v2/user/{user}/product/{product}")
+@app.post("/v2/user/{user}/product/{product}", dependencies=[Depends(api_auth)])
 async def add_product_to_user(user: str, product: str):
     if not getuser(user):
         raise HTTPException(status_code=404, detail="User not found")
 
     try:
         giveproduct(user, product)
-        userinfo = getuser(user)
+        userinfo = helper(getuser(user))
         member = nextcord.utils.get(sbot.users, id=userinfo["discordid"])
         if member != None:  # Try to prevent it from returning an error
             product = getproduct(product)
@@ -248,14 +263,14 @@ async def add_product_to_user(user: str, product: str):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.delete("/v2/user/{user}/product/{product}")
+@app.delete("/v2/user/{user}/product/{product}", dependencies=[Depends(api_auth)])
 async def remove_product_from_user(user: str, product: str):
     if not getuser(user):
         raise HTTPException(status_code=404, detail="User not found")
 
     try:
         revokeproduct(user, product)
-        userinfo = getuser(user)
+        userinfo = helper(getuser(user))
 
         return userinfo
     except Exception as e:
@@ -267,27 +282,27 @@ async def get_tags():
     dbresponse = gettags()
     results = {}
     for i in dbresponse:
-        results[i["name"]] = i
+        results[i["name"]] = helper(i)
     return results
 
 
 @app.get("/v2/tag/{tag}")
 async def get_tag(tag: str):
-    dbresponse = gettag(tag)
+    dbresponse = helper(gettag(tag))
     if dbresponse:
         return dbresponse
     raise HTTPException(status_code=404, detail="Tag not found")
 
 
-@app.post("/v2/tag")
+@app.post("/v2/tag", dependencies=[Depends(api_auth)])
 async def create_tag(tag: Tag):
-    dbresponse = createtag(tag.name, tag.color, tag.textcolor)
+    dbresponse = helper(createtag(tag.name, tag.color, tag.textcolor))
     if dbresponse:
         return dbresponse
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.delete("/v2/tag/{tag}")
+@app.delete("/v2/tag/{tag}", dependencies=[Depends(api_auth)])
 async def delete_tag(tag: str):
     if not gettag(tag):
         raise HTTPException(status_code=404, detail="Tag not found")
@@ -298,23 +313,25 @@ async def delete_tag(tag: str):
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.put("/v2/tag/{tag}")
+@app.put("/v2/tag/{tag}", dependencies=[Depends(api_auth)])
 async def update_tag(tag: str, tag_info: Tag):
     if not gettag(tag):
         raise HTTPException(status_code=404, detail="tag not found")
 
-    dbresponse = updatetag(
-        tag,
-        tag_info.name,
-        tag_info.color,
-        tag_info.textcolor,
+    dbresponse = helper(
+        updatetag(
+            tag,
+            tag_info.name,
+            tag_info.color,
+            tag_info.textcolor,
+        )
     )
     if dbresponse:
         return dbresponse
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.post("/v2/purchases")
+@app.post("/v2/purchases", dependencies=[Depends(api_auth)])
 async def create_purchase(universeId: int, purchase: Purchase):
     try:
         # We still have to create a purchase for ever purchase instead of reusing old ones

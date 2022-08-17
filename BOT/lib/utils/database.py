@@ -6,6 +6,8 @@
     Documentation: MongoDB: https://pymongo.readthedocs.io/en/stable/index.html / https://www.w3schools.com/python/python_mongodb_getstarted.asp
 """
 from pprint import pprint
+from bson import ObjectId
+from bson.errors import InvalidId
 import json
 import certifi
 import codecs
@@ -147,58 +149,6 @@ if config["database"]["type"].lower() == "sqlalchemy":
             db.commit()
             return info
 
-    def insertmany(data, info):
-        if data == "products":
-            additions = []
-            for product in info:
-                attachments = json.dumps(info["attachments"])
-                tags = json.dumps(info["tags"])
-                product = Product(
-                    name=info["name"],
-                    description=info["description"],
-                    price=info["price"],
-                    productid=info["productid"],
-                    attachments=attachments,
-                    tags=tags,
-                    purchases=info["purchases"],
-                    created=info["created"],
-                )
-                additions.append(product)
-
-            db.add_all(additions)
-            db.commit()
-            return info
-        elif data == "users":
-            additions = []
-            for user in info:
-                purchases = json.dumps(user["purchases"])
-                user = User(
-                    id=user["_id"],
-                    discordid=user["discordid"],
-                    username=user["username"],
-                    purchases=purchases,
-                )
-                additions.append(user)
-
-            db.add_all(additions)
-            db.commit()
-            return info
-        elif data == "tags":
-            additions = []
-            for tag in info:
-                color = json.dumps(info["color"])
-                textcolor = json.dumps(info["textcolor"])
-                tag = Tag(
-                    name=info["name"],
-                    color=color,
-                    textcolor=textcolor,
-                )
-                additions.append(tag)
-
-            db.add_all(additions)
-            db.commit()
-            return info
-
     def update(data, query, info):
         if data == "products":
             filters = get_filter_by_args(Product, query)
@@ -233,44 +183,6 @@ if config["database"]["type"].lower() == "sqlalchemy":
             db.commit()
             return info
 
-    def updatemany(data, query, info):
-        filters = get_filter_by_args(Product, query)
-        if data == "products":
-            for product in info:
-                product = db.query(Product).filter(*filters).first()
-                new_info = product["$set"]
-                product.name = new_info["name"]
-                product.description = new_info["description"]
-                product.price = new_info["price"]
-                product.productid = new_info["productid"]
-                product.attachments = json.dumps(new_info["attachments"])
-                product.tags = json.dumps(new_info["tags"])
-                product.purchases = new_info["purchases"]
-
-            db.commit()
-            return info
-        elif data == "users":
-            for user in info:
-                user = db.query(User).filter(*filters).first()
-                new_info = user["$set"]
-            if "discordid" in new_info:
-                user.discordid = new_info["discordid"]
-            elif "purchases" in new_info:
-                user.purchases = new_info["purchases"]
-
-            db.commit()
-            return info
-        elif data == "tags":
-            for tag in info:
-                tag = db.query(Tag).filter(*filters).first()
-                new_info = tag["$set"]
-                tag.name = new_info["name"]
-                tag.color = json.dumps(new_info["color"])
-                tag.textcolor = json.dumps(new_info["textcolor"])
-
-            db.commit()
-            return info
-
     def delete(data, query):
         if data == "products":
             filters = get_filter_by_args(Product, query)
@@ -288,29 +200,6 @@ if config["database"]["type"].lower() == "sqlalchemy":
             filters = get_filter_by_args(Tag, query)
             tag = db.query(Tag).filter(*filters).first()
             db.delete(tag)
-            db.commit()
-            return True
-
-    def deletemany(data, query):
-        if data == "products":
-            filters = get_filter_by_args(Product, query)
-            products = db.query(Product).filter(*filters).all()
-            for product in products:
-                db.delete(product)
-            db.commit()
-            return True
-        elif data == "users":
-            filters = get_filter_by_args(User, query)
-            users = db.query(User).filter(*filters).all()
-            for user in users:
-                db.delete(user)
-            db.commit()
-            return True
-        elif data == "tags":
-            filters = get_filter_by_args(Tag, query)
-            tags = db.query(Tag).filter(*filters).all()
-            for tag in tags:
-                db.delete(tag)
             db.commit()
             return True
 
@@ -453,42 +342,50 @@ if config["database"]["type"].lower() == "mongodb":
     )  # Some systems may not require "tlsCAFile"
     db = client.data
 
+    def filter_query(dic_args: dict):
+        if dic_args.get("_id"):
+            try:
+                dic_args["_id"] = ObjectId(dic_args["_id"])
+            except InvalidId:
+                if type(dic_args["_id"]) != int:
+                    dic_args["_id"] = int(dic_args["_id"])
+            except TypeError:
+                if type(dic_args["_id"]) != int:
+                    dic_args["_id"] = int(dic_args["_id"])
+
+        return dic_args
+
     def insert(data, info):
         col = db[data]
         result = col.insert_one(info)
+        result = col.find_one({"_id": ObjectId(result.inserted_id)})
         return result
-
-    def insertmany(data, info):
-        col = db[data]
-        results = col.insert_many(info)
-        return results
 
     def update(data, query, info):
+        query = filter_query(query)
         col = db[data]
         result = col.update_one(query, info)
+        try:
+            result = col.find_one({"name": info["$set"]["name"]})
+        except Exception as e:
+            # Assume its because its a user
+            result = col.find_one(query)
         return result
-
-    def updatemany(data, query, info):
-        col = db[data]
-        results = col.update_many(query, info)
-        return results
 
     def delete(data, query):
+        query = filter_query(query)
         col = db[data]
         result = col.delete_one(query)
-        return result
-
-    def deletemany(data, query):
-        col = db[data]
-        results = col.delete_many(query)
-        return results
+        return True
 
     def find(data, query):
+        query = filter_query(query)
         col = db[data]
         results = col.find(query)
         return results
 
     def find_one(data, query):
+        query = filter_query(query)
         col = db[data]
         results = col.find_one(query)
         return results
