@@ -1,4 +1,10 @@
-This system is currently undergoing a major redo, view more info [here](https://github.com/Redon-Tech/Roblox-Purchasing-Hub/tree/development)
+# ⚠️ WARNING ⚠️
+# This system is no longer maintained and should not be used [learn more here](https://discord.com/channels/536555061510144020/828735765747466281/1058297470804820039)
+\
+\
+\
+\
+~This system is currently undergoing a major redo, view more info [here](https://github.com/Redon-Tech/Roblox-Purchasing-Hub/tree/development)~
 
 
 <h1 align="center">Roblox Purchasing Hub</h1>
